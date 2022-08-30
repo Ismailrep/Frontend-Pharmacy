@@ -222,9 +222,7 @@ const InvoiceList = () => {
                             <tr className="tb-odr-item" key={item.id}>
                               <td className="tb-odr-info">
                                 <span className="tb-odr-id">
-                                  <Link to={`${process.env.PUBLIC_URL}/invoice-details/${item.id}`}>
-                                    #{item.orderId}
-                                  </Link>
+                                  <Link to={`/invoice-details/${item.id}`}>#{item.orderId}</Link>
                                 </span>
                                 <span className="tb-odr-date">{item.date}</span>
                               </td>
@@ -249,18 +247,18 @@ const InvoiceList = () => {
                               </td>
                               <td className="tb-odr-action">
                                 <div className="tb-odr-btns d-none d-sm-inline">
-                                  <Link to={`${process.env.PUBLIC_URL}/invoice-print/${item.id}`} target="_blank">
+                                  <Link to={`/invoice-print/${item.id}`} target="_blank">
                                     <Button color="primary" size="sm" className="btn-icon btn-white btn-dim">
                                       <Icon name="printer-fill"></Icon>
                                     </Button>
                                   </Link>
-                                  <Link to={`${process.env.PUBLIC_URL}/invoice-details/${item.id}`}>
+                                  <Link to={`/invoice-details/${item.id}`}>
                                     <Button color="primary" size="sm" className="btn btn-dim">
                                       View
                                     </Button>
                                   </Link>
                                 </div>
-                                <Link to={`${process.env.PUBLIC_URL}/invoice-details/${item.id}`}>
+                                <Link to={`/invoice-details/${item.id}`}>
                                   <Button className="btn-pd-auto d-sm-none">
                                     <Icon name="chevron-right"></Icon>
                                   </Button>

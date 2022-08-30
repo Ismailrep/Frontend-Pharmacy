@@ -147,7 +147,7 @@ const UserProfileRegularPage = ({ sm, updateSm, setProfileName }) => {
             </div>
           </div>
         </div>
-        <div className="nk-data data-list">
+        {/* <div className="nk-data data-list">
           <div className="data-head">
             <h6 className="overline-title">Preferences</h6>
           </div>
@@ -202,7 +202,7 @@ const UserProfileRegularPage = ({ sm, updateSm, setProfileName }) => {
               </a>
             </div>
           </div>
-        </div>
+        </div> */}
       </Block>
 
       <Modal isOpen={modal} className="modal-dialog-centered" size="lg" toggle={() => setModal(false)}>

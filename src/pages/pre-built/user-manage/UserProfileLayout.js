@@ -110,23 +110,17 @@ const UserProfileLayout = () => {
                   <ul className="link-list-menu">
                     <li onClick={() => updateSm(false)}>
                       <Link
-                        to={`${process.env.PUBLIC_URL}/user-profile-regular`}
-                        className={
-                          window.location.pathname === `${process.env.PUBLIC_URL}/user-profile-regular` ? "active" : ""
-                        }
+                        to={`/user-profile-regular`}
+                        className={window.location.pathname === `/user-profile-regular` ? "active" : ""}
                       >
                         <Icon name="user-fill-c"></Icon>
                         <span>Personal Information</span>
                       </Link>
                     </li>
-                    <li onClick={() => updateSm(false)}>
+                    {/* <li onClick={() => updateSm(false)}>
                       <Link
-                        to={`${process.env.PUBLIC_URL}/user-profile-notification`}
-                        className={
-                          window.location.pathname === `${process.env.PUBLIC_URL}/user-profile-notification`
-                            ? "active"
-                            : ""
-                        }
+                        to={`/user-profile-notification`}
+                        className={window.location.pathname === `/user-profile-notification` ? "active" : ""}
                       >
                         <Icon name="bell-fill"></Icon>
                         <span>Notification</span>
@@ -134,21 +128,17 @@ const UserProfileLayout = () => {
                     </li>
                     <li onClick={() => updateSm(false)}>
                       <Link
-                        to={`${process.env.PUBLIC_URL}/user-profile-activity`}
-                        className={
-                          window.location.pathname === `${process.env.PUBLIC_URL}/user-profile-activity` ? "active" : ""
-                        }
+                        to={`/user-profile-activity`}
+                        className={window.location.pathname === `/user-profile-activity` ? "active" : ""}
                       >
                         <Icon name="activity-round-fill"></Icon>
                         <span>Account Activity</span>
                       </Link>
-                    </li>
+                    </li> */}
                     <li onClick={() => updateSm(false)}>
                       <Link
-                        to={`${process.env.PUBLIC_URL}/user-profile-setting`}
-                        className={
-                          window.location.pathname === `${process.env.PUBLIC_URL}/user-profile-setting` ? "active" : ""
-                        }
+                        to={`/user-profile-setting`}
+                        className={window.location.pathname === `/user-profile-setting` ? "active" : ""}
                       >
                         <Icon name="lock-alt-fill"></Icon>
                         <span>Security Setting</span>
@@ -163,22 +153,22 @@ const UserProfileLayout = () => {
               <Switch>
                 <Route
                   exact
-                  path={`${process.env.PUBLIC_URL}/user-profile-regular`}
+                  path={`/user-profile-regular`}
                   render={() => <UserProfileRegularPage updateSm={updateSm} sm={sm} setProfileName={setProfileName} />}
                 ></Route>
-                <Route
+                {/* <Route
                   exact
-                  path={`${process.env.PUBLIC_URL}/user-profile-notification`}
+                  path={`/user-profile-notification`}
                   render={() => <UserProfileNotificationPage updateSm={updateSm} sm={sm} />}
                 ></Route>
                 <Route
                   exact
-                  path={`${process.env.PUBLIC_URL}/user-profile-activity`}
+                  path={`/user-profile-activity`}
                   render={() => <UserProfileActivityPage updateSm={updateSm} sm={sm} />}
-                ></Route>
+                ></Route> */}
                 <Route
                   exact
-                  path={`${process.env.PUBLIC_URL}/user-profile-setting`}
+                  path={`/user-profile-setting`}
                   render={() => <UserProfileSettingPage updateSm={updateSm} sm={sm} />}
                 ></Route>
               </Switch>

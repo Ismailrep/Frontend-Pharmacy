@@ -5,44 +5,39 @@ const menu = [
   {
     icon: "bag",
     text: "E-Commerce Panel",
-    link: "/ecommerce/index",
+    link: "/admin",
     panel: true,
     newTab: true,
     subPanel: [
       {
         icon: "dashboard-fill",
         text: "Dashboard",
-        link: "/ecommerce/index",
+        link: "/admin",
       },
       {
         icon: "bag-fill",
         text: "Orders",
-        link: "/ecommerce/orders",
+        link: "/admin/orders",
       },
       {
         icon: "package-fill",
         text: "Products",
-        link: "/ecommerce/products",
+        link: "/admin/products",
       },
       {
         icon: "users-fill",
         text: "Customers",
-        link: "/ecommerce/customer",
+        link: "/admin/customer",
+      },
+      {
+        icon: "file-docs",
+        text: "Invoices",
+        link: "/admin/invoice-list",
       },
       {
         icon: "chat-fill",
         text: "Support",
-        link: "/ecommerce/support",
-      },
-      {
-        icon: "opt-alt-fill",
-        text: "Settings",
-        link: "/ecommerce/settings",
-      },
-      {
-        icon: "server-fill",
-        text: "Integration",
-        link: "/ecommerce/integration",
+        link: "/admin/support",
       },
     ],
   },
@@ -52,35 +47,20 @@ const menu = [
   {
     icon: "cart-fill",
     text: "Default",
-    link: "/",
+    link: "/admin",
   },
   {
     icon: "activity-round-fill",
     text: "Sales",
-    link: "/sales",
+    link: "/admin/sales",
   },
   {
     icon: "growth-fill",
     text: "Analytics",
-    link: "/analytics",
+    link: "/admin/analytics",
   },
   {
     heading: "Pre-built Pages",
-  },
-  {
-    icon: "tile-thumb-fill",
-    text: "Projects",
-    active: false,
-    subMenu: [
-      {
-        text: "Project Cards",
-        link: "/project-card",
-      },
-      {
-        text: "Project List",
-        link: "/project-list",
-      },
-    ],
   },
   {
     icon: "users-fill",
@@ -89,19 +69,19 @@ const menu = [
     subMenu: [
       {
         text: "User List - Default",
-        link: "/user-list-default",
+        link: "/admin/user-list-default",
       },
       {
         text: "User List - Regular",
-        link: "/user-list-regular",
+        link: "/admin/user-list-regular",
       },
       {
         text: "User List - Compact",
-        link: "/user-list-compact",
+        link: "/admin/user-list-compact",
       },
       {
         text: "User Details - Regular",
-        link: "/user-details-regular/1",
+        link: "/admin/user-details-regular/1",
       },
       {
         text: "User Profile - Regular",
@@ -121,30 +101,15 @@ const menu = [
     subMenu: [
       {
         text: "Order List - Default",
-        link: "/order-list-default",
+        link: "/admin/order-list-default",
       },
       {
         text: "Order List - Regular",
-        link: "/order-list-regular",
+        link: "/admin/order-list-regular",
       },
       {
         text: "Order List - Sales",
-        link: "/order-list-sales",
-      },
-    ],
-  },
-  {
-    icon: "file-docs",
-    text: "AML / KYCs",
-    active: false,
-    subMenu: [
-      {
-        text: "KYC List - Regular",
-        link: "/kyc-list-regular",
-      },
-      {
-        text: "KYC Details - Regular",
-        link: "/kyc-details-regular/UD01544",
+        link: "/admin/order-list-sales",
       },
     ],
   },
@@ -161,23 +126,6 @@ const menu = [
         text: "Chats / Messenger",
         link: "/app-chat",
       },
-      {
-        text: "Inbox / Mail",
-        link: "/app-inbox",
-      },
-      {
-        text: "Calendar",
-        link: "/app-calender",
-      },
-      {
-        text: "Kanban Board",
-        link: "/app-kanban",
-      },
-      {
-        text: "File Manager",
-        link: "/app-file-manager",
-        badge: "new",
-      },
     ],
   },
   {
@@ -187,7 +135,7 @@ const menu = [
     subMenu: [
       {
         text: "Product List",
-        link: "/product-list",
+        link: "/admin/product-list",
       },
       {
         text: "Product Card",
@@ -206,23 +154,13 @@ const menu = [
     subMenu: [
       {
         text: "Invoice List",
-        link: "/invoice-list",
+        link: "/admin/invoice-list",
       },
       {
         text: "Invoice Details",
-        link: "/invoice-details/1",
+        link: "/admin/invoice-details/1",
       },
     ],
-  },
-  {
-    icon: "view-col",
-    text: "Pricing Table",
-    link: "/pricing-table",
-  },
-  {
-    icon: "img",
-    text: "Image Gallery",
-    link: "/image-gallery",
   },
   {
     heading: "Misc Pages",

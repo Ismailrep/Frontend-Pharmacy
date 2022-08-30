@@ -187,7 +187,7 @@ const ProductCard = () => {
                         </DropdownMenu>
                       </UncontrolledDropdown>
                     </li>
-                    <li className="nk-block-tools-opt">
+                    {/* <li className="nk-block-tools-opt">
                       <Button className="toggle btn-icon d-md-none" color="primary" onClick={toggle}>
                         <Icon name="plus"></Icon>
                       </Button>
@@ -195,7 +195,7 @@ const ProductCard = () => {
                         <Icon name="plus"></Icon>
                         <span>Add Product</span>
                       </Button>
-                    </li>
+                    </li> */}
                   </ul>
                 </div>
               </div>

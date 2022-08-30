@@ -122,13 +122,13 @@ const ProductDetails = ({ match }) => {
                 </BlockDes>
               </BlockHeadContent>
               <BlockHeadContent>
-                <Link to={`${process.env.PUBLIC_URL}/product-card`}>
+                <Link to={`/`}>
                   <Button color="light" outline className="bg-white d-none d-sm-inline-flex">
                     <Icon name="arrow-left"></Icon>
                     <span>Back</span>
                   </Button>
                 </Link>
-                <Link to={`${process.env.PUBLIC_URL}/product-card`}>
+                <Link to={`/`}>
                   <Button color="light" outline className="btn-icon bg-white d-inline-flex d-sm-none">
                     <Icon name="arrow-left"></Icon>
                   </Button>

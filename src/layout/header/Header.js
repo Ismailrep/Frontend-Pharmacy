@@ -6,6 +6,7 @@ import User from "./dropdown/user/User";
 import Notification from "./dropdown/notification/Notification";
 import HeaderSearch from "../header-search/HeaderSearch";
 import ChatDropdown from "./dropdown/chat/Chat";
+import CartDropdown from "./dropdown/cart/Cart";
 
 const Header = ({ fixed, theme, className, setVisibility, ...props }) => {
   const headerClass = classNames({
@@ -34,13 +35,16 @@ const Header = ({ fixed, theme, className, setVisibility, ...props }) => {
           </div>
           <div className="nk-header-tools">
             <ul className="nk-quick-nav">
-              <li className="chats-dropdown hide-mb-xs"  onClick={() => setVisibility(false)}>
+              <li className="cart-fill hide-mb-xs" onClick={() => setVisibility(false)}>
+                <CartDropdown />
+              </li>
+              <li className="chats-dropdown hide-mb-xs" onClick={() => setVisibility(false)}>
                 <ChatDropdown />
               </li>
-              <li className="notification-dropdown mr-n1"  onClick={() => setVisibility(false)}>
+              <li className="notification-dropdown mr-n1" onClick={() => setVisibility(false)}>
                 <Notification />
               </li>
-              <li className="user-dropdown"  onClick={() => setVisibility(false)}>
+              <li className="user-dropdown" onClick={() => setVisibility(false)}>
                 <User />
               </li>
             </ul>

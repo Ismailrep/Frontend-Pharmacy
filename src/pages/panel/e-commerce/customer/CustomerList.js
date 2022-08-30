@@ -351,7 +351,7 @@ const CustomerList = () => {
                       </div>
                     </DataTableRow>
                     <DataTableRow>
-                      <Link to={`${process.env.PUBLIC_URL}/ecommerce/customer-details/${item.id}`}>
+                      <Link to={`/admin/customer-details/${item.id}`}>
                         <div className="user-card">
                           <UserAvatar theme={item.avatarBg} text={findUpper(item.name)} image={item.image}></UserAvatar>
                           <div className="user-info">

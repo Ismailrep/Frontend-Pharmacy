@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import {
   Block,
   BlockContent,
@@ -15,37 +16,26 @@ import { Form, FormGroup, Spinner, Alert } from "reactstrap";
 import PageContainer from "../../layout/page-container/PageContainer";
 import Head from "../../layout/head/Head";
 import AuthFooter from "./AuthFooter";
-import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { loginAdmin } from "../../redux/actions/admin";
+import { Link, Redirect } from "react-router-dom";
 
 const Login = () => {
-  const [loading, setLoading] = useState(false);
+  const admin = useSelector((state) => state.admin);
+  const dispatch = useDispatch();
+
   const [passState, setPassState] = useState(false);
   const [errorVal, setError] = useState("");
+  const [inputData, setInputData] = useState({ email: "", password: "" });
 
-  const onFormSubmit = (formData) => {
-    setLoading(true);
-    const loginName = "info@softnio.com";
-    const pass = "123456";
-    if (formData.name === loginName && formData.passcode === pass) {
-      localStorage.setItem("accessToken", "token");
-      setTimeout(() => {
-        window.history.pushState(
-          `${process.env.PUBLIC_URL ? process.env.PUBLIC_URL : "/"}`,
-          "auth-login",
-          `${process.env.PUBLIC_URL ? process.env.PUBLIC_URL : "/"}`
-        );
-        window.location.reload();
-      }, 2000);
-    } else {
-      setTimeout(() => {
-        setError("Cannot login with credentials");
-        setLoading(false);
-      }, 2000);
-    }
+  const inputHandler = (event) => {
+    const { name, value } = event.target;
+
+    setInputData({ ...inputData, [name]: value });
   };
 
-  const { errors, register, handleSubmit } = useForm();
+  if (admin.id) {
+    return <Redirect to={"/admin"} />;
+  }
 
   return (
     <React.Fragment>
@@ -76,30 +66,30 @@ const Login = () => {
                 </Alert>
               </div>
             )}
-            <Form className="is-alter" onSubmit={handleSubmit(onFormSubmit)}>
+            <Form className="is-alter">
               <FormGroup>
                 <div className="form-label-group">
                   <label className="form-label" htmlFor="default-01">
-                    Email or Username
+                    Email
                   </label>
                 </div>
                 <div className="form-control-wrap">
                   <input
                     type="text"
                     id="default-01"
-                    name="name"
-                    ref={register({ required: "This field is required" })}
-                    defaultValue="info@softnio.com"
-                    placeholder="Enter your email address or username"
+                    name="email"
+                    onChange={inputHandler}
+                    value={inputData.email}
+                    placeholder="Enter your email address"
                     className="form-control-lg form-control"
                   />
-                  {errors.name && <span className="invalid">{errors.name.message}</span>}
+                  {admin.errMsg && <span className="invalid">{admin.errMsg}</span>}
                 </div>
               </FormGroup>
               <FormGroup>
                 <div className="form-label-group">
                   <label className="form-label" htmlFor="password">
-                    Passcode
+                    Password
                   </label>
                   <Link className="link link-primary link-sm" to={`/auth-reset`}>
                     Forgot Code?
@@ -121,18 +111,18 @@ const Login = () => {
                   <input
                     type={passState ? "text" : "password"}
                     id="password"
-                    name="passcode"
-                    defaultValue="123456"
-                    ref={register({ required: "This field is required" })}
-                    placeholder="Enter your passcode"
+                    name="password"
+                    onChange={inputHandler}
+                    value={inputData.password}
+                    placeholder="Enter your password"
                     className={`form-control-lg form-control ${passState ? "is-hidden" : "is-shown"}`}
                   />
-                  {errors.passcode && <span className="invalid">{errors.passcode.message}</span>}
+                  {/* {errors.passcode && <span className="invalid">{errors.passcode.message}</span>} */}
                 </div>
               </FormGroup>
               <FormGroup>
-                <Button size="lg" className="btn-block" type="submit" color="primary">
-                  {loading ? <Spinner size="sm" color="light" /> : "Sign in"}
+                <Button size="lg" className="btn-block" onClick={() => dispatch(loginAdmin(inputData))} color="primary">
+                  {admin.isLoading ? <Spinner size="sm" color="light" /> : "Sign in"}
                 </Button>
               </FormGroup>
             </Form>
@@ -176,4 +166,5 @@ const Login = () => {
     </React.Fragment>
   );
 };
+
 export default Login;

@@ -71,13 +71,15 @@ const Layout = () => {
       <Head title="Loading" />
       <div className="nk-app-root">
         <div className="nk-main">
-          <Sidebar
-            sidebarToggle={toggleSidebar}
-            fixed
-            mobileView={mobileView}
-            theme={themeState.sidebar}
-            className={sidebarClass}
-          />
+          {window.location.pathname.includes("admin") && (
+            <Sidebar
+              sidebarToggle={toggleSidebar}
+              fixed
+              mobileView={mobileView}
+              theme={themeState.sidebar}
+              className={sidebarClass}
+            />
+          )}
           {visibility && mobileView && <div className="nk-sidebar-overlay" onClick={toggleSidebar}></div>}
           <div className="nk-wrap">
             <Header sidebarToggle={toggleSidebar} fixed setVisibility={setVisibility} theme={themeState.header} />
