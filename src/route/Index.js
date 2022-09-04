@@ -235,6 +235,7 @@ const Pages = () => {
         <Route exact path={`/pages/faq`} component={Faq}></Route>
         <Route exact path={`/pages/regular-v1`} component={Regularv1}></Route>
         <Route exact path={`/pages/regular-v2`} component={Regularv2}></Route>
+        <Route exact path={`/email-template`} component={EmailTemplate}></Route>
 
         {/*Application*/}
         <Route exact path={`/app-messages`} component={AppMessages}></Route>

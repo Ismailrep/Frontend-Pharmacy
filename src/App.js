@@ -19,6 +19,7 @@ import LoginAdm from "./pages/auth/LoginAdm";
 import Register from "./pages/auth/Register";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import Success from "./pages/auth/Success";
+import Verified from "./pages/auth/Verified";
 import InvoicePrint from "./pages/pre-built/invoice/InvoicePrint";
 import { adminKeepLogin, checkStorage } from "./redux/actions/admin";
 import { Spinner } from "reactstrap";
@@ -46,6 +47,7 @@ const App = () => {
         <Route exact path={`/auth-register`} component={Register}></Route>
         <Route exact path={`/adm`} component={LoginAdm}></Route>
         <Route exact path={`/auth-login`} component={Login}></Route>
+        <Route exact path={`/verification/:token`} component={Verified}></Route>
 
         {/* Print Pages */}
         <Route exact path={`/invoice-print/:id`} component={InvoicePrint}></Route>

@@ -6,8 +6,17 @@ import PageContainer from "../../layout/page-container/PageContainer";
 import Head from "../../layout/head/Head";
 import AuthFooter from "./AuthFooter";
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { verifyUser } from "../../redux/actions/users";
 
-const Success = () => {
+const Verified = () => {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(verifyUser());
+  }, []);
+
   return (
     <React.Fragment>
       <Head title="Success" />
@@ -21,9 +30,14 @@ const Success = () => {
           </div>
           <BlockHead>
             <BlockContent>
-              <BlockTitle tag="h4">Thank you for registering your Ramu account</BlockTitle>
+              <BlockTitle tag="h3">Your Account is Verified!</BlockTitle>
               <BlockDes className="text-success">
-                <p>Please check your e-mail for verification before you login</p>
+                <p>Now you can login to your Ramu account</p>
+                <div className="form-note-s2 text-center pt-4">
+                  <Link to={`${process.env.PUBLIC_URL}/auth-login`}>
+                    <strong>Click here for login</strong>
+                  </Link>
+                </div>
               </BlockDes>
             </BlockContent>
           </BlockHead>
@@ -33,4 +47,4 @@ const Success = () => {
     </React.Fragment>
   );
 };
-export default Success;
+export default Verified;
