@@ -387,7 +387,7 @@ const FormLayoutsPage = ({ ...props }) => {
                         type="text"
                         id="site-copyright"
                         className="form-control"
-                        defaultValue="&copy; 2019, DashLite. All Rights Reserved."
+                        defaultValue="&copy; 2019, Ramupharma. All Rights Reserved."
                       />
                     </div>
                   </FormGroup>

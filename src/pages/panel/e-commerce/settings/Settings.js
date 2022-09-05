@@ -79,7 +79,7 @@ const Settings = () => {
                         type="text"
                         className="form-control"
                         id="site-copyright"
-                        defaultValue="&copy; 2019, DashLite. All Rights Reserved."
+                        defaultValue="&copy; 2019, Ramupharma. All Rights Reserved."
                       />
                     </div>
                   </FormGroup>
