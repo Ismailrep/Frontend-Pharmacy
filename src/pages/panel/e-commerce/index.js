@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import Content from "../../../layout/content/Content";
 import Head from "../../../layout/head/Head";
 import { Block, BlockBetween, BlockHead, BlockHeadContent, BlockTitle, Col, Row } from "../../../components/Component";
@@ -11,8 +12,15 @@ import TotalSales from "../../../components/partials/e-commerce/total-sales/Tota
 import StoreStatistics from "../../../components/partials/default/StoreStatistics";
 import TrafficSources from "../../../components/partials/e-commerce/traffic-sources/TrafficSources";
 import StoreVisitors from "../../../components/partials/e-commerce/store-visitors/StoreVisitors";
+import { Redirect } from "react-router";
 
 const Dashboard = () => {
+  const admin = useSelector((state) => state.admin);
+
+  if (!admin.id) {
+    return <Redirect to={"/"} />;
+  }
+
   return (
     <React.Fragment>
       <Head title="Dashboard"></Head>

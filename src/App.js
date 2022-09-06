@@ -28,7 +28,7 @@ const App = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const token = localStorage.getItem("userAccess");
+    const token = localStorage.getItem("adminAccess");
     if (token) {
       // const userData = JSON.parse(userLocalStorage);
       dispatch(adminKeepLogin(token));

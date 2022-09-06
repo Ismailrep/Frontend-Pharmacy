@@ -17,10 +17,10 @@ import Head from "../../layout/head/Head";
 import AuthFooter from "./AuthFooter";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
-<<<<<<< Updated upstream:src/pages/auth/Register.js
-=======
+// <<<<<<< Updated upstream:src/pages/auth/Register.js
+// =======
 import axios from "axios";
->>>>>>> Stashed changes:src/pages/auth/Register.jsx
+// >>>>>>> Stashed changes:src/pages/auth/Register.jsx
 
 const Register = ({ history }) => {
   const [passState, setPassState] = useState(false);

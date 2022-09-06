@@ -11,8 +11,6 @@ export const loginAdmin = (data) => {
 
       const response = await Axios.post(`${API_URL}/admin/login`, data);
 
-      //   alert(response.data.adminData.email);
-
       if (typeof response.data === "string") {
         dispatch({
           type: "ADMIN_ERROR",
@@ -20,7 +18,7 @@ export const loginAdmin = (data) => {
         });
       } else {
         delete response.data.adminData.password;
-        localStorage.setItem("userAccess", response.data.token);
+        localStorage.setItem("adminAccess", response.data.token);
 
         dispatch({
           type: "ADMIN_LOGIN",
@@ -39,7 +37,7 @@ export const loginAdmin = (data) => {
 
 export const logoutAdmin = () => {
   try {
-    localStorage.removeItem("userAccess");
+    localStorage.removeItem("adminAccess");
     return {
       type: "ADMIN_LOGOUT",
     };
@@ -56,7 +54,7 @@ export const adminKeepLogin = (token) => {
       });
 
       delete response.data.adminData.password;
-      localStorage.setItem("userAccess", response.data.token);
+      localStorage.setItem("adminAccess", response.data.token);
 
       dispatch({
         type: "ADMIN_LOGIN",

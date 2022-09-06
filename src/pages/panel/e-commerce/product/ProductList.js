@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import Head from "../../../../layout/head/Head";
 import Content from "../../../../layout/content/Content";
 import {
@@ -26,8 +27,11 @@ import { useForm } from "react-hook-form";
 import ProductH from "../../../../images/product/h.png";
 import Dropzone from "react-dropzone";
 import { Modal, ModalBody } from "reactstrap";
+import { Redirect } from "react-router";
 
 const ProductList = () => {
+  const admin = useSelector((state) => state.admin);
+
   const [data, setData] = useState(productData);
   const [sm, updateSm] = useState(false);
   const [formData, setFormData] = useState({
@@ -225,6 +229,10 @@ const ProductList = () => {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const { errors, register, handleSubmit, reset } = useForm();
+
+  if (!admin.id) {
+    return <Redirect to={"/"} />;
+  }
 
   return (
     <React.Fragment>

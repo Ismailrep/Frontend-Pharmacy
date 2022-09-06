@@ -4,6 +4,7 @@ import { CustomerProvider } from "../pages/panel/e-commerce/customer/CustomerCon
 import { ProductContextProvider } from "../pages/pre-built/products/ProductContext";
 import { UserContextProvider } from "../pages/pre-built/user-manage/UserContext";
 import { RedirectAs404 } from "../utils/Utils";
+import { AdminProvider } from "../pages/panel/e-commerce/customer/AdminContext";
 
 import Homepage from "../pages/Homepage";
 import Sales from "../pages/Sales";
@@ -13,6 +14,7 @@ import EcomOrder from "../pages/panel/e-commerce/order/OrderDefault";
 import EcomSupport from "../pages/panel/e-commerce/support/Messages";
 import EcomProducts from "../pages/panel/e-commerce/product/ProductList";
 import EcomCustomer from "../pages/panel/e-commerce/customer/CustomerList";
+import AdminList from "../pages/panel/e-commerce/customer/AdminList";
 import EcomCustomerDetails from "../pages/panel/e-commerce/customer/CustomerDetails";
 import EcomIntegration from "../pages/panel/e-commerce/integration/Integration";
 import EcomSettings from "../pages/panel/e-commerce/settings/Settings";
@@ -131,6 +133,15 @@ const Pages = () => {
         <Route exact path={`/admin/orders`} component={EcomOrder}></Route>
         <Route exact path={`/admin/products`} component={EcomProducts}></Route>
         <Route exact path={`/admin/support`} component={EcomSupport}></Route>
+        <Route
+          exact
+          path={`/admin/admin-list`}
+          render={() => (
+            <AdminProvider>
+              <AdminList />
+            </AdminProvider>
+          )}
+        ></Route>
         <Route
           exact
           path={`/admin/customer`}

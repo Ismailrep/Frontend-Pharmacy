@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import Head from "../../../../layout/head/Head";
 import Content from "../../../../layout/content/Content";
 import DatePicker from "react-datepicker";
@@ -23,8 +24,11 @@ import {
 import { getDateStructured } from "../../../../utils/Utils";
 import { UncontrolledDropdown, DropdownMenu, DropdownToggle, DropdownItem, Button, Modal, ModalBody } from "reactstrap";
 import { useForm } from "react-hook-form";
+import { Redirect } from "react-router";
 
 const OrderDefault = () => {
+  const admin = useSelector((state) => state.admin);
+
   const [data, setData] = useState(orderData);
   const [smOption, setSmOption] = useState(false);
   const [formData, setFormData] = useState({
@@ -177,6 +181,10 @@ const OrderDefault = () => {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const { errors, register, handleSubmit } = useForm();
+
+  if (!admin.id) {
+    return <Redirect to={"/"} />;
+  }
 
   return (
     <React.Fragment>

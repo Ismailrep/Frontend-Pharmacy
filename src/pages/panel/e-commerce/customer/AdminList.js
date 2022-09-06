@@ -35,12 +35,14 @@ import { filterStatus, CustomerData } from "./CustomerData";
 import { findUpper } from "../../../../utils/Utils";
 import { Link, Redirect } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { CustomerContext } from "./CustomerContext";
+import { AdminContext } from "./AdminContext";
+import axios from "axios";
+import { API_URL } from "../../../../constants/API";
 
 const CustomerList = () => {
   const admin = useSelector((state) => state.admin);
 
-  const { contextData } = useContext(CustomerContext);
+  const { contextData } = useContext(AdminContext);
   const [data, setData] = contextData;
 
   const [sm, updateSm] = useState(false);
@@ -53,54 +55,85 @@ const CustomerList = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    balance: "",
-    phone: "",
-    status: "Active",
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemPerPage] = useState(10);
 
-  // unselects the data on mount
+  const [errMsg, setErrMsg] = useState({});
+  const [complete, setComplete] = useState(false);
+
+  // REGULAR EXPRESSION
+  const namePattern = /^([a-zA-Z]{3,})$/;
+  const emailPattern = /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/i;
+
+  // INPUT VALIDATION WITH REGULAR EXPRESSION
+  const validName = namePattern.test(formData.name);
+  const validMail = emailPattern.test(formData.email);
+
+  // HANDLE INVALID NAME
   useEffect(() => {
-    let newData;
-    newData = CustomerData.map((item) => {
-      item.checked = false;
-      return item;
-    });
-    setData([...newData]);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!validName && formData.name) {
+      setErrMsg({ name: "Min. 3 character." });
+    } else {
+      setErrMsg({ name: "" });
+    }
+  }, [validName, formData.name]);
+
+  // HANDLE INVALID EMAIL
+  useEffect(() => {
+    if (!validMail && formData.email) {
+      setErrMsg({ email: "Email isn't valid." });
+    } else {
+      setErrMsg({ email: "" });
+    }
+  }, [validMail, formData.email]);
+
+  useEffect(() => {
+    if (!formData.name || errMsg.name || !formData.email || errMsg.email) {
+      setComplete(false);
+    } else {
+      setComplete(true);
+    }
+  }, [{ ...errMsg }]);
+
+  // unselects the data on mount
+  // useEffect(() => {
+  //   let newData;
+  //   newData = CustomerData.map((item) => {
+  //     item.checked = false;
+  //     return item;
+  //   });
+  //   setData([...newData]);
+  // }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Changing state value when searching name
-  useEffect(() => {
-    if (onSearchText !== "") {
-      const filteredObject = CustomerData.filter((item) => {
-        return (
-          item.name.toLowerCase().includes(onSearchText.toLowerCase()) ||
-          item.email.toLowerCase().includes(onSearchText.toLowerCase())
-        );
-      });
-      setData([...filteredObject]);
-    } else {
-      setData([...CustomerData]);
-    }
-  }, [onSearchText, setData]);
+  // useEffect(() => {
+  //   if (onSearchText !== "") {
+  //     const filteredObject = CustomerData.filter((item) => {
+  //       return (
+  //         item.name.toLowerCase().includes(onSearchText.toLowerCase()) ||
+  //         item.email.toLowerCase().includes(onSearchText.toLowerCase())
+  //       );
+  //     });
+  //     setData([...filteredObject]);
+  //   } else {
+  //     setData([...CustomerData]);
+  //   }
+  // }, [onSearchText, setData]);
 
   // function to change the selected property of an item
-  const onSelectChange = (e, id) => {
-    let newData = data;
-    let index = newData.findIndex((item) => item.id === id);
-    newData[index].checked = e.currentTarget.checked;
-    setData([...newData]);
-  };
+  // const onSelectChange = (e, id) => {
+  //   let newData = data;
+  //   let index = newData.findIndex((item) => item.id === id);
+  //   newData[index].checked = e.currentTarget.checked;
+  //   setData([...newData]);
+  // };
 
   // function to reset the form
   const resetForm = () => {
     setFormData({
       name: "",
       email: "",
-      balance: "",
-      phone: "",
-      status: "Active",
     });
   };
 
@@ -108,6 +141,16 @@ const CustomerList = () => {
   const onFormCancel = () => {
     setModal({ edit: false, add: false });
     resetForm();
+  };
+
+  const btnAddAdmin = async () => {
+    try {
+      await axios.post(`${API_URL}/admin/add-admin`, formData);
+      alert("Admin successfully added and verification mail has been sent.");
+      setModal({ ...modal, add: false });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   // submit function to add a new item
@@ -224,6 +267,11 @@ const CustomerList = () => {
 
   const { errors, register, handleSubmit } = useForm();
 
+  const inputHandler = (event) => {
+    const { name, value } = event.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
   if (!admin.id) {
     return <Redirect to={"/"} />;
   }
@@ -236,10 +284,10 @@ const CustomerList = () => {
           <BlockBetween>
             <BlockHeadContent>
               <BlockTitle tag="h3" page>
-                Users Lists
+                Admin Lists
               </BlockTitle>
               <BlockDes className="text-soft">
-                <p>You have total 2,595 users.</p>
+                <p>You have total {data.length} admins.</p>
               </BlockDes>
             </BlockHeadContent>
             <BlockHeadContent>
@@ -252,12 +300,12 @@ const CustomerList = () => {
                 </Button>
                 <div className="toggle-expand-content" style={{ display: sm ? "block" : "none" }}>
                   <ul className="nk-block-tools g-3">
-                    <li>
+                    {/* <li>
                       <Button color="light" outline className="btn-white">
                         <Icon name="download-cloud"></Icon>
                         <span>Export</span>
                       </Button>
-                    </li>
+                    </li> */}
                     <li className="nk-block-tools-opt">
                       <Button color="primary" className="btn-icon" onClick={() => setModal({ add: true })}>
                         <Icon name="plus"></Icon>
@@ -285,18 +333,18 @@ const CustomerList = () => {
                 </div>
               </DataTableRow>
               <DataTableRow>
-                <span className="sub-text">User</span>
+                <span className="sub-text">Full Name</span>
               </DataTableRow>
               <DataTableRow size="mb">
-                <span className="sub-text">Ordered</span>
+                <span className="sub-text">Email</span>
               </DataTableRow>
               <DataTableRow size="md">
-                <span className="sub-text">Phone</span>
+                <span className="sub-text">Status</span>
               </DataTableRow>
               <DataTableRow size="lg">
-                <span className="sub-text">Country</span>
+                <span className="sub-text">Role</span>
               </DataTableRow>
-              <DataTableRow size="lg">
+              {/* <DataTableRow size="lg">
                 <span className="sub-text">Last Order</span>
               </DataTableRow>
               <DataTableRow size="md">
@@ -338,11 +386,11 @@ const CustomerList = () => {
                     </ul>
                   </DropdownMenu>
                 </UncontrolledDropdown>
-              </DataTableRow>
+              </DataTableRow> */}
             </DataTableHead>
             {/*Head*/}
-            {currentItems.length > 0
-              ? currentItems.map((item) => (
+            {data.length > 0
+              ? data.map((item) => (
                   <DataTableItem key={item.id}>
                     <DataTableRow className="nk-tb-col-check">
                       <div className="custom-control custom-control-sm custom-checkbox notext">
@@ -360,10 +408,10 @@ const CustomerList = () => {
                     <DataTableRow>
                       <Link to={`/admin/customer-details/${item.id}`}>
                         <div className="user-card">
-                          <UserAvatar theme={item.avatarBg} text={findUpper(item.name)} image={item.image}></UserAvatar>
+                          {/* <UserAvatar theme={item.avatarBg} text={findUpper(item.name)} image={item.image}></UserAvatar> */}
                           <div className="user-info">
                             <span className="tb-lead">
-                              {item.name} <span className="dot dot-success d-md-none ml-1"></span>
+                              {item.first_name} <span className="dot dot-success d-md-none ml-1"></span>
                             </span>
                             <span>{item.email}</span>
                           </div>
@@ -371,17 +419,15 @@ const CustomerList = () => {
                       </Link>
                     </DataTableRow>
                     <DataTableRow size="mb">
-                      <span className="tb-amount">
-                        {item.balance} <span className="currency">USD</span>
-                      </span>
+                      <span className="tb-amount">{item.email}</span>
                     </DataTableRow>
                     <DataTableRow size="md">
-                      <span>{item.phone}</span>
+                      {item.is_verified ? <span>Verified</span> : <span style={{ color: "red" }}>Unverified</span>}
                     </DataTableRow>
                     <DataTableRow size="lg">
-                      <span>{item.country}</span>
+                      <span>{item.role}</span>
                     </DataTableRow>
-                    <DataTableRow size="lg">
+                    {/* <DataTableRow size="lg">
                       <span>{item.lastLogin}</span>
                     </DataTableRow>
                     <DataTableRow size="md">
@@ -460,12 +506,12 @@ const CustomerList = () => {
                           </UncontrolledDropdown>
                         </li>
                       </ul>
-                    </DataTableRow>
+                    </DataTableRow> */}
                   </DataTableItem>
                 ))
               : null}
           </div>
-          <PreviewAltCard>
+          {/* <PreviewAltCard>
             {currentItems.length > 0 ? (
               <PaginationComponent
                 itemPerPage={itemPerPage}
@@ -478,7 +524,7 @@ const CustomerList = () => {
                 <span className="text-silent">No data found</span>
               </div>
             )}
-          </PreviewAltCard>
+          </PreviewAltCard> */}
         </Block>
 
         <Modal isOpen={modal.add} toggle={() => setModal({ add: false })} className="modal-dialog-centered" size="lg">
@@ -494,9 +540,9 @@ const CustomerList = () => {
               <Icon name="cross-sm"></Icon>
             </a>
             <div className="p-2">
-              <h5 className="title">Add User</h5>
+              <h5 className="title">Add Admin</h5>
               <div className="mt-4">
-                <Form className="row gy-4" noValidate onSubmit={handleSubmit(onFormSubmit)}>
+                <Form className="row gy-4">
                   <Col md="6">
                     <FormGroup>
                       <label className="form-label">Name</label>
@@ -504,11 +550,11 @@ const CustomerList = () => {
                         className="form-control"
                         type="text"
                         name="name"
-                        defaultValue={formData.name}
+                        value={formData.name}
                         placeholder="Enter name"
-                        ref={register({ required: "This field is required" })}
+                        onChange={inputHandler}
                       />
-                      {errors.name && <span className="invalid">{errors.name.message}</span>}
+                      {errMsg.name && <span className="invalid">{errMsg.name}</span>}
                     </FormGroup>
                   </Col>
                   <Col md="6">
@@ -518,20 +564,14 @@ const CustomerList = () => {
                         className="form-control"
                         type="text"
                         name="email"
-                        defaultValue={formData.email}
+                        value={formData.email}
                         placeholder="Enter email"
-                        ref={register({
-                          required: "This field is required",
-                          pattern: {
-                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                            message: "invalid email address",
-                          },
-                        })}
+                        onChange={inputHandler}
                       />
-                      {errors.email && <span className="invalid">{errors.email.message}</span>}
+                      {errMsg.email && <span className="invalid">{errMsg.email}</span>}
                     </FormGroup>
                   </Col>
-                  <Col md="6">
+                  {/* <Col md="6">
                     <FormGroup>
                       <label className="form-label">Ordered</label>
                       <input
@@ -569,12 +609,12 @@ const CustomerList = () => {
                         />
                       </div>
                     </FormGroup>
-                  </Col>
+                  </Col> */}
                   <Col size="12">
                     <ul className="align-center flex-wrap flex-sm-nowrap gx-4 gy-2">
                       <li>
-                        <Button color="primary" size="md" type="submit">
-                          Add User
+                        <Button disabled={!complete} onClick={btnAddAdmin} color="primary" size="md" type="submit">
+                          Add Admin
                         </Button>
                       </li>
                       <li>
@@ -597,7 +637,7 @@ const CustomerList = () => {
           </ModalBody>
         </Modal>
 
-        <Modal isOpen={modal.edit} toggle={() => setModal({ edit: false })} className="modal-dialog-centered" size="lg">
+        {/* <Modal isOpen={modal.edit} toggle={() => setModal({ edit: false })} className="modal-dialog-centered" size="lg">
           <ModalBody>
             <a
               href="#cancel"
@@ -715,7 +755,7 @@ const CustomerList = () => {
               </div>
             </div>
           </ModalBody>
-        </Modal>
+        </Modal> */}
       </Content>
     </React.Fragment>
   );

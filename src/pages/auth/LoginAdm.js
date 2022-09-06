@@ -53,9 +53,7 @@ const Login = () => {
             <BlockHead>
               <BlockContent>
                 <BlockTitle tag="h4">Sign-In</BlockTitle>
-                <BlockDes>
-                  <p>Access Dashlite using your email and passcode.</p>
-                </BlockDes>
+                <BlockDes>{/* <p>Access Dashlite using your email and passcode.</p> */}</BlockDes>
               </BlockContent>
             </BlockHead>
             {errorVal && (
@@ -83,7 +81,7 @@ const Login = () => {
                     placeholder="Enter your email address"
                     className="form-control-lg form-control"
                   />
-                  {admin.errMsg && <span className="invalid">{admin.errMsg}</span>}
+                  {admin.errMsg.includes("mail") && <span className="invalid">{admin.errMsg}</span>}
                 </div>
               </FormGroup>
               <FormGroup>
@@ -117,48 +115,13 @@ const Login = () => {
                     placeholder="Enter your password"
                     className={`form-control-lg form-control ${passState ? "is-hidden" : "is-shown"}`}
                   />
-                  {/* {errors.passcode && <span className="invalid">{errors.passcode.message}</span>} */}
+                  {admin.errMsg.includes("Password") && <span className="invalid">{admin.errMsg}</span>}
                 </div>
               </FormGroup>
-              <FormGroup>
-                <Button size="lg" className="btn-block" onClick={() => dispatch(loginAdmin(inputData))} color="primary">
-                  {admin.isLoading ? <Spinner size="sm" color="light" /> : "Sign in"}
-                </Button>
-              </FormGroup>
             </Form>
-            <div className="form-note-s2 text-center pt-4">
-              {" "}
-              New on our platform? <Link to={`/auth-register`}>Create an account</Link>
-            </div>
-            <div className="text-center pt-4 pb-3">
-              <h6 className="overline-title overline-title-sap">
-                <span>OR</span>
-              </h6>
-            </div>
-            <ul className="nav justify-center gx-4">
-              <li className="nav-item">
-                <a
-                  className="nav-link"
-                  href="#socials"
-                  onClick={(ev) => {
-                    ev.preventDefault();
-                  }}
-                >
-                  Facebook
-                </a>
-              </li>
-              <li className="nav-item">
-                <a
-                  className="nav-link"
-                  href="#socials"
-                  onClick={(ev) => {
-                    ev.preventDefault();
-                  }}
-                >
-                  Google
-                </a>
-              </li>
-            </ul>
+            <Button size="lg" className="btn-block" onClick={() => dispatch(loginAdmin(inputData))} color="primary">
+              {admin.isLoading ? <Spinner size="sm" color="light" /> : "Sign in"}
+            </Button>
           </PreviewCard>
         </Block>
         <AuthFooter />

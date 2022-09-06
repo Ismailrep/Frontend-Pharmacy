@@ -21,15 +21,16 @@ const Success = () => {
           </div>
           <BlockHead>
             <BlockContent>
-<<<<<<< Updated upstream
+              {/* <<<<<<< Updated upstream */}
               <BlockTitle tag="h4">Thank you for submitting form</BlockTitle>
               <BlockDes className="text-success">
                 <p>You can now sign in with your new password</p>
-=======
+              </BlockDes>
+              {/* ======= */}
               <BlockTitle tag="h4">Thank you for registering your Ramu account</BlockTitle>
               <BlockDes className="">
                 <p>Please check your e-mail for verification before you log in</p>
->>>>>>> Stashed changes
+                {/* >>>>>>> Stashed changes */}
               </BlockDes>
             </BlockContent>
           </BlockHead>
