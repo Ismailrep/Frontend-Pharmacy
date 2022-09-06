@@ -17,20 +17,44 @@ import Head from "../../layout/head/Head";
 import AuthFooter from "./AuthFooter";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
+// <<<<<<< HEAD
 // <<<<<<< Updated upstream:src/pages/auth/Register.js
 // =======
 import axios from "axios";
 // >>>>>>> Stashed changes:src/pages/auth/Register.jsx
+// =======
+import axios from "axios";
+// >>>>>>> d79a407d232ef0d6995861548d3e34d0330d7445
 
 const Register = ({ history }) => {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
   const [passState, setPassState] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState("");
   const { errors, register, handleSubmit } = useForm();
 
-  const handleFormSubmit = () => {
-    setLoading(true);
-    setTimeout(() => history.push(`${process.env.PUBLIC_URL}/auth-success`), 2000);
+  const Register = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post("http://localhost:2000/users/register", {
+        first_name: firstName,
+        last_name: lastName,
+        email: email,
+        phone: phone,
+        password: password,
+      });
+      history.push(`${process.env.PUBLIC_URL}/auth-success`);
+    } catch (error) {
+      if (error.response) {
+        setMsg(error.response.data.msg);
+      }
+    }
   };
+
   return (
     <React.Fragment>
       <Head title="Register" />
@@ -47,31 +71,71 @@ const Register = ({ history }) => {
               <BlockContent>
                 <BlockTitle tag="h4">Register</BlockTitle>
                 <BlockDes>
-                  <p>Create New Dashlite Account</p>
+                  <p>Create New Ramu Account</p>
                 </BlockDes>
               </BlockContent>
             </BlockHead>
-            <form className="is-alter" onSubmit={handleSubmit(handleFormSubmit)}>
+            <form className="is-alter" onSubmit={Register}>
               <FormGroup>
-                <label className="form-label" htmlFor="name">
-                  Name
+                <label className="form-label" htmlFor="firstName">
+                  First Name
                 </label>
                 <div className="form-control-wrap">
                   <input
                     type="text"
-                    id="name"
-                    name="name"
-                    placeholder="Enter your name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Enter your first name"
                     ref={register({ required: true })}
                     className="form-control-lg form-control"
+                    required
                   />
-                  {errors.name && <p className="invalid">This field is required</p>}
+                  {errors.firstName && <p className="invalid">This field is required</p>}
+                </div>
+              </FormGroup>
+              <FormGroup>
+                <label className="form-label" htmlFor="lastName">
+                  Last Name
+                </label>
+                <div className="form-control-wrap">
+                  <input
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Enter your last name"
+                    ref={register({ required: true })}
+                    className="form-control-lg form-control"
+                    required
+                  />
                 </div>
               </FormGroup>
               <FormGroup>
                 <div className="form-label-group">
                   <label className="form-label" htmlFor="default-01">
-                    Email or Username
+                    Email
+                  </label>
+                </div>
+                <div className="form-control-wrap">
+                  <input
+                    type="text"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    bssize="lg"
+                    id="default-01"
+                    name="email"
+                    ref={register({ required: true })}
+                    className="form-control-lg form-control"
+                    placeholder="Enter a valid email address"
+                    required
+                    pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$"
+                    title="Please insert a valid email address"
+                  />
+                </div>
+              </FormGroup>
+              <FormGroup>
+                <div className="form-label-group">
+                  <label className="form-label" htmlFor="default-01">
+                    Phone Number
                   </label>
                 </div>
                 <div className="form-control-wrap">
@@ -79,18 +143,21 @@ const Register = ({ history }) => {
                     type="text"
                     bssize="lg"
                     id="default-01"
-                    name="email"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                     ref={register({ required: true })}
                     className="form-control-lg form-control"
-                    placeholder="Enter your email address or username"
+                    placeholder="Enter your phone number"
+                    required
+                    pattern="(\+62 ((\d{3}([ -]\d{3,})([- ]\d{4,})?)|(\d+)))|(\(\d+\) \d+)|\d{3}( \d+)+|(\d+[ -]\d+)|\d+"
+                    title="Please insert a valid phone number"
                   />
-                  {errors.email && <p className="invalid">This field is required</p>}
                 </div>
               </FormGroup>
               <FormGroup>
                 <div className="form-label-group">
                   <label className="form-label" htmlFor="password">
-                    Passcode
+                    Password
                   </label>
                 </div>
                 <div className="form-control-wrap">
@@ -110,13 +177,18 @@ const Register = ({ history }) => {
                     type={passState ? "text" : "password"}
                     id="password"
                     name="passcode"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     ref={register({ required: "This field is required" })}
-                    placeholder="Enter your passcode"
+                    placeholder="Enter your password"
                     className={`form-control-lg form-control ${passState ? "is-hidden" : "is-shown"}`}
+                    required
+                    pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*?[0-9])(?=.*?[!@#$%^&*+`~'=?\|\]\[\(\)\-<>/]).{8,}"
+                    title="Requires number, symbol, uppercase and lowercase letter. At least 8 or more characters"
                   />
-                  {errors.passcode && <span className="invalid">{errors.passcode.message}</span>}
                 </div>
               </FormGroup>
+              <p className="text-center text-danger">{msg}</p>
               <FormGroup>
                 <Button type="submit" color="primary" size="lg" className="btn-block">
                   {loading ? <Spinner size="sm" color="light" /> : "Register"}
