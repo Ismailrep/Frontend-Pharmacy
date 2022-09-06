@@ -100,7 +100,6 @@ const Register = ({ history }) => {
                     className="form-control-lg form-control"
                     required
                   />
-                  {/* {errors.lastName && <p className="invalid">This field is required</p>} */}
                 </div>
               </FormGroup>
               <FormGroup>
@@ -124,7 +123,6 @@ const Register = ({ history }) => {
                     pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$"
                     title="Please insert a valid email address"
                   />
-                  {/* {errors.email && <p className="invalid">This field is required</p>} */}
                 </div>
               </FormGroup>
               <FormGroup>
@@ -147,7 +145,6 @@ const Register = ({ history }) => {
                     pattern="(\+62 ((\d{3}([ -]\d{3,})([- ]\d{4,})?)|(\d+)))|(\(\d+\) \d+)|\d{3}( \d+)+|(\d+[ -]\d+)|\d+"
                     title="Please insert a valid phone number"
                   />
-                  {/* {errors.phone && <p className="invalid">This field is required</p>} */}
                 </div>
               </FormGroup>
               <FormGroup>
@@ -182,7 +179,6 @@ const Register = ({ history }) => {
                     pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*?[0-9])(?=.*?[!@#$%^&*+`~'=?\|\]\[\(\)\-<>/]).{8,}"
                     title="Requires number, symbol, uppercase and lowercase letter. At least 8 or more characters"
                   />
-                  {/* {errors.passcode && <span className="invalid">{errors.passcode.message}</span>} */}
                 </div>
               </FormGroup>
               <p className="text-center text-danger">{msg}</p>
