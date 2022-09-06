@@ -17,14 +17,7 @@ import Head from "../../layout/head/Head";
 import AuthFooter from "./AuthFooter";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
-// <<<<<<< HEAD
-// <<<<<<< Updated upstream:src/pages/auth/Register.js
-// =======
 import axios from "axios";
-// >>>>>>> Stashed changes:src/pages/auth/Register.jsx
-// =======
-import axios from "axios";
-// >>>>>>> d79a407d232ef0d6995861548d3e34d0330d7445
 
 const Register = ({ history }) => {
   const [firstName, setFirstName] = useState("");
