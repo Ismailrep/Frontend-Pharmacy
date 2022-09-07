@@ -22,6 +22,7 @@ import Success from "./pages/auth/Success";
 import InvoicePrint from "./pages/pre-built/invoice/InvoicePrint";
 import { adminKeepLogin, checkStorage } from "./redux/actions/admin";
 import { Spinner } from "reactstrap";
+import VerifiedAdm from "./pages/auth/VerifiedAdm";
 
 const App = () => {
   const admin = useSelector((state) => state.admin);
@@ -61,6 +62,8 @@ const App = () => {
         <Route exact path={`/errors/504-modern`} component={Error504Modern}></Route>
         <Route exact path={`/errors/404-modern`} component={Error404Modern}></Route>
         <Route exact path={`/errors/504-classic`} component={Error504Classic}></Route>
+
+        <Route exact path={`/admin-verification/:token`} component={VerifiedAdm}></Route>
 
         {/*Main Routes*/}
         <PrivateRoute exact path="" component={Layout}></PrivateRoute>
