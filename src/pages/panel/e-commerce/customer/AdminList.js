@@ -38,6 +38,7 @@ import { useForm } from "react-hook-form";
 import { AdminContext } from "./AdminContext";
 import axios from "axios";
 import { API_URL } from "../../../../constants/API";
+import { Spinner, Alert } from "reactstrap";
 
 const CustomerList = () => {
   const admin = useSelector((state) => state.admin);
@@ -61,6 +62,7 @@ const CustomerList = () => {
 
   const [errMsg, setErrMsg] = useState({});
   const [complete, setComplete] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // REGULAR EXPRESSION
   const namePattern = /^([a-zA-Z]{3,})$/;
@@ -145,7 +147,12 @@ const CustomerList = () => {
 
   const btnAddAdmin = async () => {
     try {
-      await axios.post(`${API_URL}/admin/add-admin`, formData);
+      setIsLoading(true);
+      const response = await axios.post(`${API_URL}/admin/add-admin`, formData);
+      setIsLoading(false);
+      if (response.data == "email") {
+        return setErrMsg({ ...errMsg, emailUsed: response.data });
+      }
       alert("Admin successfully added and verification mail has been sent.");
       setModal({ ...modal, add: false });
     } catch (error) {
@@ -569,6 +576,7 @@ const CustomerList = () => {
                         onChange={inputHandler}
                       />
                       {errMsg.email && <span className="invalid">{errMsg.email}</span>}
+                      {errMsg.emailUsed && <span className="invalid">Email already registered.</span>}
                     </FormGroup>
                   </Col>
                   {/* <Col md="6">
@@ -610,28 +618,34 @@ const CustomerList = () => {
                       </div>
                     </FormGroup>
                   </Col> */}
-                  <Col size="12">
-                    <ul className="align-center flex-wrap flex-sm-nowrap gx-4 gy-2">
-                      <li>
-                        <Button disabled={!complete} onClick={btnAddAdmin} color="primary" size="md" type="submit">
-                          Add Admin
-                        </Button>
-                      </li>
-                      <li>
-                        <a
-                          href="#cancel"
-                          onClick={(ev) => {
-                            ev.preventDefault();
-                            onFormCancel();
-                          }}
-                          className="link link-light"
-                        >
-                          Cancel
-                        </a>
-                      </li>
-                    </ul>
-                  </Col>
                 </Form>
+                <Col>
+                  <ul className="align-center flex-wrap flex-sm-nowrap gx-4 gy-2">
+                    <li>
+                      <Button
+                        disabled={!complete || isLoading}
+                        onClick={btnAddAdmin}
+                        color="primary"
+                        size="md"
+                        type="submit"
+                      >
+                        {isLoading ? <Spinner size="sm" color="light" /> : "Add Admin"}
+                      </Button>
+                    </li>
+                    <li>
+                      <a
+                        href="#cancel"
+                        onClick={(ev) => {
+                          ev.preventDefault();
+                          onFormCancel();
+                        }}
+                        className="link link-light"
+                      >
+                        Cancel
+                      </a>
+                    </li>
+                  </ul>
+                </Col>
               </div>
             </div>
           </ModalBody>

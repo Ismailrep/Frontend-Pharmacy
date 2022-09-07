@@ -30,7 +30,7 @@ const menu = [
         link: "/admin/customer",
       },
       {
-        icon: "admin-fill",
+        icon: "users-fill",
         text: "Admins",
         link: "/admin/admin-list",
       },
