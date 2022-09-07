@@ -32,5 +32,22 @@ const userReducer = (
       };
     case "VERIFICATION_FAIL":
       return { ...state, verifLoading: false, error: false };
+    case "RESETPASS_START":
+      return { ...state, resetLoading: true, error: false };
+    case "RESETPASS_SUCCESS":
+      localStorage.setItem("profile", JSON.stringify({ ...action?.data }));
+      return {
+        ...state,
+        authData: action.data,
+        resetLoading: false,
+        error: false,
+      };
+    case "RESETPASS_FAIL":
+      return { ...state, resetLoading: false, error: false };
+
+    default:
+      return state;
   }
 };
+
+export default userReducer;

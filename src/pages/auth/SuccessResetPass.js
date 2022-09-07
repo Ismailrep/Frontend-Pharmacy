@@ -5,19 +5,9 @@ import LogoDark from "../../images/logo-dark.png";
 import PageContainer from "../../layout/page-container/PageContainer";
 import Head from "../../layout/head/Head";
 import AuthFooter from "./AuthFooter";
-import { Link, useParams } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
-import { verifyUser } from "../../redux/actions/users";
+import { Link } from "react-router-dom";
 
-const Verified = () => {
-  const dispatch = useDispatch();
-  const { uuid } = useParams();
-
-  useEffect(() => {
-    dispatch(verifyUser(uuid.slice(1)));
-  }, []);
-
+const SuccessResetPass = () => {
   return (
     <React.Fragment>
       <Head title="Success" />
@@ -31,15 +21,15 @@ const Verified = () => {
           </div>
           <BlockHead>
             <BlockContent>
-              <BlockTitle tag="h3">Your Account is Verified!</BlockTitle>
+              <BlockTitle tag="h4">Password Reset!</BlockTitle>
               <BlockDes className="">
-                <p>Now you can login to your Ramu account</p>
-                <div className="form-note-s2">
-                  <Link to={`${process.env.PUBLIC_URL}/auth-login`}>
-                    <strong>Click here for log in</strong>
-                  </Link>
-                </div>
+                <p>Your password has been reset. You can log in with your new password</p>
               </BlockDes>
+              <div className="form-note-s2 text-center pt-4">
+                <Link to={`${process.env.PUBLIC_URL}/auth-login`}>
+                  <strong>Return to login</strong>
+                </Link>
+              </div>
             </BlockContent>
           </BlockHead>
         </Block>
@@ -48,4 +38,4 @@ const Verified = () => {
     </React.Fragment>
   );
 };
-export default Verified;
+export default SuccessResetPass;
