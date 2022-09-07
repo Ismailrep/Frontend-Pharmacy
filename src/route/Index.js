@@ -114,6 +114,7 @@ import TinymcePreview from "../pages/components/forms/rich-editor/TinymcePreview
 import KnobPreview from "../pages/components/charts/KnobPreview";
 import { FileManagerContextProvider } from "../pages/app/file-manager/FileManagerContext";
 import Cart from "../pages/Cart";
+import Verified from "../pages/auth/Verified";
 
 const Pages = () => {
   useLayoutEffect(() => {
@@ -191,6 +192,8 @@ const Pages = () => {
             </UserContextProvider>
           )}
         ></Route>
+
+        <Route exact path={`/verified/:uuid`} component={Verified}></Route>
         <Route exact path={`/user-profile-regular/`} component={UserProfileLayout}></Route>
         <Route exact path={`/user-profile-notification`} component={UserProfileLayout}></Route>
         <Route exact path={`/user-profile-activity`} component={UserProfileLayout}></Route>

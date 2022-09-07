@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Block, BlockContent, BlockDes, BlockHead, BlockTitle, Button, PreviewCard } from "../../components/Component";
 import Logo from "../../images/logo.png";
 import LogoDark from "../../images/logo-dark.png";
@@ -7,11 +7,29 @@ import PageContainer from "../../layout/page-container/PageContainer";
 import Head from "../../layout/head/Head";
 import AuthFooter from "./AuthFooter";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
-const ForgotPassword = () => {
+const ForgotPassword = ({ history }) => {
+  const [email, setEmail] = useState("");
+  const [msg, setMsg] = useState("");
+
+  const ForgotPassword = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post("http://localhost:2000/users/reset-mail-sent", {
+        email: email,
+      });
+      history.push(`${process.env.PUBLIC_URL}/reset-mail-sent`);
+    } catch (error) {
+      if (error.response) {
+        setMsg(error.response.data.msg);
+      }
+    }
+  };
+
   return (
     <React.Fragment>
-      <Head title="Forgot-Password" />
+      <Head title="ForgotPassword" />
       <PageContainer>
         <Block className="nk-block-middle nk-auth-body  wide-xs">
           <div className="brand-logo pb-4 text-center">
@@ -29,22 +47,28 @@ const ForgotPassword = () => {
                 </BlockDes>
               </BlockContent>
             </BlockHead>
-            <form>
+            <form onSubmit={ForgotPassword}>
               <FormGroup>
                 <div className="form-label-group">
                   <label className="form-label" htmlFor="default-01">
                     Email
                   </label>
                 </div>
-                <input
-                  type="text"
-                  className="form-control form-control-lg"
-                  id="default-01"
-                  placeholder="Enter your email address"
-                />
+                <div className="form-control-wrap">
+                  <input
+                    type="text"
+                    name="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="form-control form-control-lg"
+                    id="default-01"
+                    placeholder="Enter your email address"
+                  />
+                </div>
               </FormGroup>
+              <p className="text-center text-danger">{msg}</p>
               <FormGroup>
-                <Button color="primary" size="lg" className="btn-block" onClick={(ev) => ev.preventDefault()}>
+                <Button type="submit" color="primary" size="lg" className="btn-block">
                   Send Reset Link
                 </Button>
               </FormGroup>

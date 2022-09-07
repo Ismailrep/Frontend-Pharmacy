@@ -22,6 +22,9 @@ import Success from "./pages/auth/Success";
 import InvoicePrint from "./pages/pre-built/invoice/InvoicePrint";
 import { adminKeepLogin, checkStorage } from "./redux/actions/admin";
 import { Spinner } from "reactstrap";
+import ResetPassword from "./pages/auth/ResetPassword";
+import SuccessSendLink from "./pages/auth/SuccessSendLink";
+import SuccessResetPass from "./pages/auth/SuccessResetPass";
 
 const App = () => {
   const admin = useSelector((state) => state.admin);
@@ -43,6 +46,9 @@ const App = () => {
         {/* Auth Pages */}
         <Route exact path={`/auth-success`} component={Success}></Route>
         <Route exact path={`/auth-reset`} component={ForgotPassword}></Route>
+        <Route exact path={`/reset-mail-sent`} component={SuccessSendLink}></Route>
+        <Route exact path={`/reset-password/:uuid`} component={ResetPassword}></Route>
+        <Route exact path={`/reset-password-success`} component={SuccessResetPass}></Route>
         <Route exact path={`/auth-register`} component={Register}></Route>
         <Route exact path={`/adm`} component={LoginAdm}></Route>
         <Route exact path={`/auth-login`} component={Login}></Route>
