@@ -26,6 +26,8 @@ import ResetPassword from "./pages/auth/ResetPassword";
 import SuccessSendLink from "./pages/auth/SuccessSendLink";
 import SuccessResetPass from "./pages/auth/SuccessResetPass";
 import VerifiedAdm from "./pages/auth/VerifiedAdm";
+import ForgotPasswordAdm from "./pages/auth/ForgotPasswordAdm";
+import ResetPasswordAdm from "./pages/auth/ResetPasswordAdm";
 
 const App = () => {
   const admin = useSelector((state) => state.admin);
@@ -47,7 +49,9 @@ const App = () => {
         {/* Auth Pages */}
         <Route exact path={`/auth-success`} component={Success}></Route>
         <Route exact path={`/auth-reset`} component={ForgotPassword}></Route>
+        <Route exact path={`/adm/forgot-password`} component={ForgotPasswordAdm}></Route>
         <Route exact path={`/reset-mail-sent`} component={SuccessSendLink}></Route>
+        <Route exact path={`/adm/reset-password/:token`} component={ResetPasswordAdm}></Route>
         <Route exact path={`/reset-password/:uuid`} component={ResetPassword}></Route>
         <Route exact path={`/reset-password-success`} component={SuccessResetPass}></Route>
         <Route exact path={`/auth-register`} component={Register}></Route>

@@ -1,18 +1,9 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  Block,
-  BlockContent,
-  BlockDes,
-  BlockHead,
-  BlockTitle,
-  Button,
-  Icon,
-  PreviewCard,
-} from "../../components/Component";
+import { Block, BlockContent, BlockDes, BlockHead, BlockTitle, Icon, PreviewCard } from "../../components/Component";
 import Logo from "../../images/logo.png";
 import LogoDark from "../../images/logo-dark.png";
-import { Form, FormGroup, Spinner, Alert } from "reactstrap";
+import { Form, FormGroup, Spinner, Alert, Button } from "reactstrap";
 import PageContainer from "../../layout/page-container/PageContainer";
 import Head from "../../layout/head/Head";
 import AuthFooter from "./AuthFooter";
@@ -52,7 +43,7 @@ const Login = () => {
           <PreviewCard className="card-bordered" bodyClass="card-inner-lg">
             <BlockHead>
               <BlockContent>
-                <BlockTitle tag="h4">Sign-In</BlockTitle>
+                <BlockTitle tag="h4">Admin Sign-In</BlockTitle>
                 <BlockDes>{/* <p>Access Dashlite using your email and passcode.</p> */}</BlockDes>
               </BlockContent>
             </BlockHead>
@@ -89,8 +80,8 @@ const Login = () => {
                   <label className="form-label" htmlFor="password">
                     Password
                   </label>
-                  <Link className="link link-primary link-sm" to={`/auth-reset`}>
-                    Forgot Code?
+                  <Link className="link link-primary link-sm" to={`/adm/forgot-password`}>
+                    Forgot Password?
                   </Link>
                 </div>
                 <div className="form-control-wrap">
@@ -119,9 +110,11 @@ const Login = () => {
                 </div>
               </FormGroup>
             </Form>
-            <Button size="lg" className="btn-block" onClick={() => dispatch(loginAdmin(inputData))} color="primary">
-              {admin.isLoading ? <Spinner size="sm" color="light" /> : "Sign in"}
-            </Button>
+            <div className="form-note-s2 text-center pt-4">
+              <Button size="lg" className="btn-block" onClick={() => dispatch(loginAdmin(inputData))} color="primary">
+                {admin.isLoading ? <Spinner size="sm" color="light" /> : "Sign in"}
+              </Button>
+            </div>
           </PreviewCard>
         </Block>
         <AuthFooter />
