@@ -72,30 +72,30 @@ const menu = [
     text: "User Manage",
     active: false,
     subMenu: [
-      {
-        text: "User List - Default",
-        link: "/admin/user-list-default",
-      },
+      // {
+      //   text: "User List - Default",
+      //   link: "/admin/user-list-default",
+      // },
       {
         text: "User List - Regular",
         link: "/admin/user-list-regular",
       },
-      {
-        text: "User List - Compact",
-        link: "/admin/user-list-compact",
-      },
+      // {
+      //   text: "User List - Compact",
+      //   link: "/admin/user-list-compact",
+      // },
       {
         text: "User Details - Regular",
         link: "/admin/user-details-regular/1",
       },
-      {
-        text: "User Profile - Regular",
-        link: "/user-profile-regular",
-      },
-      {
-        text: "User Contact - Card",
-        link: "/user-contact-card",
-      },
+      // {
+      //   text: "User Profile - Regular",
+      //   link: "/user-profile-regular",
+      // },
+      // {
+      //   text: "User Contact - Card",
+      //   link: "/user-contact-card",
+      // },
     ],
   },
 

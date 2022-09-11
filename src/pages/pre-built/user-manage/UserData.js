@@ -2,6 +2,42 @@ import User from "../../../images/avatar/b-sm.jpg";
 import User2 from "../../../images/avatar/c-sm.jpg";
 import User3 from "../../../images/avatar/a-sm.jpg";
 import User4 from "../../../images/avatar/d-sm.jpg";
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import axios from "axios";
+
+// const users = () => {
+//   const getUser = async () => {
+//     const [user, setUser] = useState([]);
+
+//     response = await axios.get("http://localhost:2000/users");
+//     // setUser(response.data);
+
+//     useEffect(() => {
+//       getUser();
+//     }, []);
+//   };
+//   // userList = response.data;
+// };
+// users();
+
+// const getUser = async (populateData) => {
+//   try {
+//     const response = await axios.get("http://localhost:2000/users");
+//     console.log("response:", response);
+//     populateData(response.data);
+//   } catch (error) {
+//     return [];
+//   }
+// };
+
+// let responseData = [];
+
+// const populateData = (data) => {
+//   responseData.push(data);
+// };
+
+// export const userData = responseData;
 
 export const userData = [
   {
