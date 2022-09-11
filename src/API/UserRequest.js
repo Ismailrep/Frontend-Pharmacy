@@ -6,3 +6,8 @@ export const verifyUser = (id) =>
   API.patch(`/users/verified/${id}`)
     .then((res) => console.log(res), console.log(id))
     .catch((err) => console.log(err));
+
+export const getUser = () =>
+  API.get(`/users`)
+    .then((res) => console.log(res))
+    .catch((err) => console.log(err));

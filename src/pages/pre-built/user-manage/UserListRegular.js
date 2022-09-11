@@ -30,17 +30,20 @@ import {
   TooltipComponent,
   RSelect,
 } from "../../../components/Component";
+import ProfPic from "../../../images/Ramu-profile-default.png";
 import Content from "../../../layout/content/Content";
 import Head from "../../../layout/head/Head";
-import { filterRole, filterStatus, userData } from "./UserData";
+import { filterRole, filterStatus } from "./UserData";
 import { bulkActionOptions, findUpper } from "../../../utils/Utils";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { UserContext } from "./UserContext";
+import axios from "axios";
 
 const UserListRegularPage = () => {
   const { contextData } = useContext(UserContext);
   const [data, setData] = contextData;
+  console.log(data);
 
   const [sm, updateSm] = useState(false);
   const [tablesm, updateTableSm] = useState(false);
@@ -62,6 +65,7 @@ const UserListRegularPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemPerPage, setItemPerPage] = useState(10);
   const [sort, setSortState] = useState("");
+  const [user, setUser] = useState([]);
 
   // Sorting data
   const sortFunc = (params) => {
@@ -78,7 +82,7 @@ const UserListRegularPage = () => {
   // unselects the data on mount
   useEffect(() => {
     let newData;
-    newData = userData.map((item) => {
+    newData = data.map((item) => {
       item.checked = false;
       return item;
     });
@@ -88,7 +92,7 @@ const UserListRegularPage = () => {
   // Changing state value when searching name
   useEffect(() => {
     if (onSearchText !== "") {
-      const filteredObject = userData.filter((item) => {
+      const filteredObject = data.filter((item) => {
         return (
           item.name.toLowerCase().includes(onSearchText.toLowerCase()) ||
           item.email.toLowerCase().includes(onSearchText.toLowerCase())
@@ -96,7 +100,7 @@ const UserListRegularPage = () => {
       });
       setData([...filteredObject]);
     } else {
-      setData([...userData]);
+      setData([...data]);
     }
   }, [onSearchText, setData]);
 
@@ -187,16 +191,17 @@ const UserListRegularPage = () => {
     resetForm();
   };
 
+  //////////////////////////////////////////////////////////////
   // function that loads the want to editted data
-  const onEditClick = (id) => {
+  const onEditClick = (uuid) => {
     data.forEach((item) => {
-      if (item.id === id) {
+      if (item.uuid === uuid) {
         setFormData({
-          name: item.name,
+          first_name: item.first_name,
+          last_name: item.last_name,
           email: item.email,
-          status: item.status,
+          active_status: item.active_status,
           phone: item.phone,
-          balance: item.balance,
         });
         setModal({ edit: true }, { add: false });
         setEditedId(id);
@@ -205,12 +210,37 @@ const UserListRegularPage = () => {
   };
 
   // function to change to suspend property for an item
-  const suspendUser = (id) => {
+  const suspendUser = (uuid) => {
     let newData = data;
-    let index = newData.findIndex((item) => item.id === id);
-    newData[index].status = "Suspend";
+    let index = newData.findIndex((item) => item.uuid === uuid);
+    newData[index].active_status = false;
     setData([...newData]);
+
+    try {
+      axios.patch(`http://localhost:2000/admin/user-deactivate/${uuid}`);
+    } catch (error) {
+      if (error.response) {
+        console.log(error.response.data.msg);
+      }
+    }
   };
+
+  const activateUser = (uuid) => {
+    let newData = data;
+    let index = newData.findIndex((item) => item.uuid === uuid);
+    newData[index].active_status = true;
+    setData([...newData]);
+
+    try {
+      axios.patch(`http://localhost:2000/admin/user-activate/${uuid}`);
+    } catch (error) {
+      if (error.response) {
+        console.log(error.response.data.msg);
+      }
+    }
+  };
+
+  ///////////////////////////////////////////////////////////////
 
   // function to change the check property of an item
   const selectorCheck = (e) => {
@@ -250,6 +280,7 @@ const UserListRegularPage = () => {
 
   const { errors, register, handleSubmit } = useForm();
 
+  console.log(data);
   return (
     <React.Fragment>
       <Head title="User List - Regular"></Head>
@@ -261,7 +292,7 @@ const UserListRegularPage = () => {
                 Users Lists
               </BlockTitle>
               <BlockDes className="text-soft">
-                <p>You have total 2,595 users.</p>
+                <p>You have total {data.length} users.</p>
               </BlockDes>
             </BlockHeadContent>
             <BlockHeadContent>
@@ -274,12 +305,12 @@ const UserListRegularPage = () => {
                 </Button>
                 <div className="toggle-expand-content" style={{ display: sm ? "block" : "none" }}>
                   <ul className="nk-block-tools g-3">
-                    <li>
+                    {/* <li>
                       <Button color="light" outline className="btn-white">
                         <Icon name="download-cloud"></Icon>
                         <span>Export</span>
                       </Button>
-                    </li>
+                    </li> */}
                     <li className="nk-block-tools-opt">
                       <Button color="primary" className="btn-icon" onClick={() => setModal({ add: true })}>
                         <Icon name="plus"></Icon>
@@ -576,18 +607,18 @@ const UserListRegularPage = () => {
                 <DataTableRow>
                   <span className="sub-text">User</span>
                 </DataTableRow>
-                <DataTableRow size="mb">
+                {/* <DataTableRow size="mb">
                   <span className="sub-text">Balance</span>
-                </DataTableRow>
+                </DataTableRow> */}
                 <DataTableRow size="md">
                   <span className="sub-text">Phone</span>
                 </DataTableRow>
                 <DataTableRow size="lg">
                   <span className="sub-text">Verified</span>
                 </DataTableRow>
-                <DataTableRow size="lg">
+                {/* <DataTableRow size="lg">
                   <span className="sub-text">Last Login</span>
-                </DataTableRow>
+                </DataTableRow> */}
                 <DataTableRow size="md">
                   <span className="sub-text">Status</span>
                 </DataTableRow>
@@ -659,21 +690,13 @@ const UserListRegularPage = () => {
                         <DataTableRow>
                           <Link to={`${process.env.PUBLIC_URL}/user-details-regular/${item.id}`}>
                             <div className="user-card">
-                              <UserAvatar
-                                theme={item.avatarBg}
-                                text={findUpper(item.name)}
-                                image={item.image}
-                              ></UserAvatar>
+                              <UserAvatar image={ProfPic}></UserAvatar>
                               <div className="user-info">
                                 <span className="tb-lead">
-                                  {item.name}{" "}
+                                  {item.first_name} {item.last_name}
                                   <span
                                     className={`dot dot-${
-                                      item.status === "Active"
-                                        ? "success"
-                                        : item.status === "Pending"
-                                        ? "warning"
-                                        : "danger"
+                                      item.active_status === true ? "success" : "danger"
                                     } d-md-none ml-1`}
                                   ></span>
                                 </span>
@@ -682,36 +705,24 @@ const UserListRegularPage = () => {
                             </div>
                           </Link>
                         </DataTableRow>
-                        <DataTableRow size="mb">
+                        {/* <DataTableRow size="mb">
                           <span className="tb-amount">
-                            {item.balance} <span className="currency">USD</span>
+                            {item.balance} <span className="currency">IDR</span>
                           </span>
-                        </DataTableRow>
+                        </DataTableRow> */}
                         <DataTableRow size="md">
                           <span>{item.phone}</span>
                         </DataTableRow>
                         <DataTableRow size="lg">
                           <ul className="list-status">
-                            <li>
+                            <li key={item.uuid}>
                               <Icon
-                                className={`text-${
-                                  item.emailStatus === "success"
-                                    ? "success"
-                                    : item.emailStatus === "pending"
-                                    ? "info"
-                                    : "secondary"
-                                }`}
-                                name={`${
-                                  item.emailStatus === "success"
-                                    ? "check-circle"
-                                    : item.emailStatus === "alert"
-                                    ? "alert-circle"
-                                    : "alarm-alt"
-                                }`}
+                                className={`text-${item.is_verified === true ? "success" : "danger"}`}
+                                name={`${item.is_verified === true ? "check-circle" : "alert-circle"}`}
                               ></Icon>{" "}
                               <span>Email</span>
                             </li>
-                            <li>
+                            {/* <li>
                               <Icon
                                 className={`text-${
                                   item.kycStatus === "success"
@@ -731,47 +742,43 @@ const UserListRegularPage = () => {
                                 }`}
                               ></Icon>{" "}
                               <span>KYC</span>
-                            </li>
+                            </li> */}
                           </ul>
                         </DataTableRow>
-                        <DataTableRow size="lg">
+                        {/* <DataTableRow size="lg">
                           <span>{item.lastLogin}</span>
-                        </DataTableRow>
+                        </DataTableRow> */}
                         <DataTableRow size="md">
-                          <span
-                            className={`tb-status text-${
-                              item.status === "Active" ? "success" : item.status === "Pending" ? "warning" : "danger"
-                            }`}
-                          >
-                            {item.status}
+                          <span className={`tb-status text-${item.active_status === true ? "success" : "danger"}`}>
+                            {item.active_status === true ? "Active" : "Deactive"}
                           </span>
                         </DataTableRow>
                         <DataTableRow className="nk-tb-col-tools">
                           <ul className="nk-tb-actions gx-1">
-                            <li className="nk-tb-action-hidden" onClick={() => onEditClick(item.id)}>
+                            {/* <li className="nk-tb-action-hidden" onClick={() => onEditClick(item.uuid)}>
                               <TooltipComponent
                                 tag="a"
                                 containerClassName="btn btn-trigger btn-icon"
-                                id={"edit" + item.id}
+                                id={"edit" + item.uuid}
                                 icon="edit-alt-fill"
                                 direction="top"
                                 text="Edit"
                               />
-                            </li>
-                            {item.status !== "Suspend" && (
+                            </li> */}
+                            {/* {item.active_status !== "Deactive" && (
                               <React.Fragment>
-                                <li className="nk-tb-action-hidden" onClick={() => suspendUser(item.id)}>
+                                <li className="nk-tb-action-hidden" onClick={() => suspendUser(item.uuid)}>
                                   <TooltipComponent
                                     tag="a"
                                     containerClassName="btn btn-trigger btn-icon"
                                     id={"suspend" + item.id}
                                     icon="user-cross-fill"
                                     direction="top"
-                                    text="Suspend"
+                                    text="Deactivate"
                                   />
                                 </li>
                               </React.Fragment>
-                            )}
+                            )} */}
                             <li>
                               <UncontrolledDropdown>
                                 <DropdownToggle tag="a" className="dropdown-toggle btn btn-icon btn-trigger">
@@ -779,7 +786,7 @@ const UserListRegularPage = () => {
                                 </DropdownToggle>
                                 <DropdownMenu right>
                                   <ul className="link-list-opt no-bdr">
-                                    <li onClick={() => onEditClick(item.id)}>
+                                    <li onClick={() => onEditClick(item.uuid)}>
                                       <DropdownItem
                                         tag="a"
                                         href="#edit"
@@ -791,19 +798,36 @@ const UserListRegularPage = () => {
                                         <span>Edit</span>
                                       </DropdownItem>
                                     </li>
-                                    {item.status !== "Suspend" && (
+                                    {item.active_status == true && (
                                       <React.Fragment>
                                         <li className="divider"></li>
-                                        <li onClick={() => suspendUser(item.id)}>
+                                        <li onClick={() => suspendUser(item.uuid)}>
                                           <DropdownItem
                                             tag="a"
-                                            href="#suspend"
+                                            href="deactivate"
                                             onClick={(ev) => {
                                               ev.preventDefault();
                                             }}
                                           >
                                             <Icon name="na"></Icon>
-                                            <span>Suspend User</span>
+                                            <span>Deactivate User</span>
+                                          </DropdownItem>
+                                        </li>
+                                      </React.Fragment>
+                                    )}
+                                    {item.active_status == false && (
+                                      <React.Fragment>
+                                        <li className="divider"></li>
+                                        <li onClick={() => activateUser(item.uuid)}>
+                                          <DropdownItem
+                                            tag="a"
+                                            href="#activate"
+                                            onClick={(ev) => {
+                                              ev.preventDefault();
+                                            }}
+                                          >
+                                            <Icon name="check-circle"></Icon>
+                                            <span>Activate User</span>
                                           </DropdownItem>
                                         </li>
                                       </React.Fragment>

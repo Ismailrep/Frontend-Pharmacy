@@ -40,3 +40,13 @@ export const verifyUser = (uuid) => async (dispatch) => {
     dispatch({ type: "VERIFICATION_FAIL" });
   }
 };
+
+export const getUser = () => async (dispatch) => {
+  dispatch({ type: "GETUSER_START" });
+  try {
+    const { data } = await UserApi.getUser();
+    dispatch({ type: "GETUSER_SUCCESS", data: data });
+  } catch (error) {
+    dispatch({ type: "GETUSER_FAIL" });
+  }
+};

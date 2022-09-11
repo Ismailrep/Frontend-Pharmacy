@@ -205,7 +205,7 @@ const Pages = () => {
         ></Route>
 
         <Route exact path={`/verified/:uuid`} component={Verified}></Route>
-        <Route exact path={`/user-profile-regular/`} component={UserProfileLayout}></Route>
+        {/* <Route exact path={`/user-profile-regular/`} component={UserProfileLayout}></Route> */}
         <Route exact path={`/user-profile-notification`} component={UserProfileLayout}></Route>
         <Route exact path={`/user-profile-activity`} component={UserProfileLayout}></Route>
         <Route exact path={`/user-profile-setting`} component={UserProfileLayout}></Route>
