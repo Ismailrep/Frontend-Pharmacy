@@ -23,7 +23,6 @@ import {
   Col,
   UserAvatar,
   PaginationComponent,
-  Button,
   DataTableHead,
   DataTableRow,
   DataTableItem,
@@ -38,7 +37,7 @@ import { useForm } from "react-hook-form";
 import { AdminContext } from "./AdminContext";
 import axios from "axios";
 import { API_URL } from "../../../../constants/API";
-import { Spinner, Alert } from "reactstrap";
+import { Spinner, Alert, Button } from "reactstrap";
 
 const CustomerList = () => {
   const admin = useSelector((state) => state.admin);

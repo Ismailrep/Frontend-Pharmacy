@@ -24,10 +24,6 @@ const ForgotPasswordAdm = ({ history }) => {
       if (!response.data) return setMsg("Account not found!");
       history.push(`${process.env.PUBLIC_URL}/reset-mail-sent`);
     } catch (error) {
-      // if (error.response) {
-      //   setMsg(error.response.data.msg);
-      //   setIsLoading(false);
-      // }
       console.log(error);
       setIsLoading(false);
     }

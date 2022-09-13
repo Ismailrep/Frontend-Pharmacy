@@ -21,39 +21,64 @@ import {
   PreviewAltCard,
 } from "../../../../components/Component";
 import { DropdownItem, UncontrolledDropdown, DropdownMenu, DropdownToggle, Badge } from "reactstrap";
-import { productData, categoryOptions } from "./ProductData";
+import { productData, categoryOptions, unitOptions } from "./ProductData";
 import SimpleBar from "simplebar-react";
 import { useForm } from "react-hook-form";
 import ProductH from "../../../../images/product/h.png";
 import Dropzone from "react-dropzone";
 import { Modal, ModalBody } from "reactstrap";
 import { Redirect } from "react-router";
+import axios from "axios";
+import { API_URL } from "../../../../constants/API";
 
 const ProductList = () => {
   const admin = useSelector((state) => state.admin);
 
   const [data, setData] = useState(productData);
   const [sm, updateSm] = useState(false);
+  const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
+    category_id: null,
     name: "",
-    img: null,
-    sku: "",
-    price: 0,
-    stock: 0,
-    category: [],
+    price: null,
+    total_stock: null,
+    unit: "",
+    unit_per_bottle: null,
+    description: "",
     fav: false,
     check: false,
   });
+  const [addCategory, setAddCategory] = useState("");
   const [editId, setEditedId] = useState();
   const [view, setView] = useState({
     edit: false,
     add: false,
+    category: false,
     details: false,
   });
   const [onSearchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemPerPage] = useState(7);
   const [files, setFiles] = useState([]);
+
+  const [errMsg, setErrMsg] = useState({});
+
+  const getCategories = async () => {
+    try {
+      let tempCategories = [];
+      const response = await axios.get(`${API_URL}/products/getCategories`);
+      await response.data.forEach((category) => {
+        tempCategories.push({ value: category.id, label: category.category });
+      });
+      setCategories(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getCategories();
+  }, []);
 
   // Changing state value when searching name
   useEffect(() => {
@@ -67,14 +92,28 @@ const ProductList = () => {
     }
   }, [onSearchText]);
 
+  const inputHandler = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
   // OnChange function to get the input data
   const onInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const number = /^[0-9]*$/;
+    if (number.test(e.target.value)) {
+      setFormData({ ...formData, [e.target.name]: +e.target.value });
+    } else {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    }
   };
 
   // category change
   const onCategoryChange = (value) => {
     setFormData({ ...formData, category: value });
+  };
+
+  // unit change
+  const onUnitChange = (value) => {
+    setFormData({ ...formData, unit: value });
   };
 
   // function to close the form modal
@@ -85,35 +124,47 @@ const ProductList = () => {
 
   const resetForm = () => {
     setFormData({
+      category_id: null,
       name: "",
-      img: null,
-      sku: "",
-      price: 0,
-      stock: 0,
-      category: [],
+      price: null,
+      total_stock: null,
+      unit: "",
+      unit_per_bottle: null,
+      description: "",
       fav: false,
       check: false,
     });
     reset({});
   };
 
-  const onFormSubmit = (form) => {
-    const { title, price, sku, stock } = form;
-    let submittedData = {
-      id: data.length + 1,
-      name: title,
-      img: files.length > 0 ? files[0].preview : ProductH,
-      sku: sku,
-      price: price,
-      stock: stock,
-      category: formData.category,
-      fav: false,
-      check: false,
-    };
-    setData([submittedData, ...data]);
-    setView({ open: false });
-    setFiles([]);
-    resetForm();
+  const btnAddCategory = async () => {
+    try {
+      await axios.post(`${API_URL}/products/addCategory`, { addCategory });
+      setView({ ...view, category: false });
+      getCategories();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const onFormSubmit = () => {
+    try {
+      if (!formData.unit) return setErrMsg({ unit: "Unit is required" });
+      if (!formData.category_id) return setErrMsg({ category_id: "Category is required" });
+      if (!files.length) return setErrMsg({ file: "Image is required" });
+      let form = new FormData();
+      form.append("file", files[0]);
+      for (let key in formData) {
+        form.append(key, formData[key]);
+      }
+      axios.post(`${API_URL}/products/addProduct`, form);
+      // setData([submittedData, ...data]);
+      setView({ open: false });
+      setFiles([]);
+      resetForm();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const onEditSubmit = () => {
@@ -202,11 +253,15 @@ const ProductList = () => {
 
   // toggle function to view product details
   const toggle = (type) => {
-    setView({
-      edit: type === "edit" ? true : false,
-      add: type === "add" ? true : false,
-      details: type === "details" ? true : false,
-    });
+    if (type === "category") {
+      setView({ ...view, category: true });
+    } else {
+      setView({
+        edit: type === "edit" ? true : false,
+        add: type === "add" ? true : false,
+        details: type === "details" ? true : false,
+      });
+    }
   };
 
   // handles ondrop function of dropzone
@@ -277,23 +332,51 @@ const ProductList = () => {
                           color="transparent"
                           className="dropdown-toggle dropdown-indicator btn btn-outline-light btn-white"
                         >
-                          Status
+                          Category
+                        </DropdownToggle>
+                        <DropdownMenu right>
+                          <ul className="link-list-opt no-bdr">
+                            {categories.map((item) => {
+                              return (
+                                <li key={item.id}>
+                                  <DropdownItem tag="a" href="#dropdownitem" onClick={(ev) => ev.preventDefault()}>
+                                    <span>{item.category}</span>
+                                  </DropdownItem>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </DropdownMenu>
+                      </UncontrolledDropdown>
+                    </li>
+                    <li>
+                      <UncontrolledDropdown>
+                        <DropdownToggle
+                          color="transparent"
+                          className="dropdown-toggle dropdown-indicator btn btn-outline-light btn-white"
+                        >
+                          Sort by
                         </DropdownToggle>
                         <DropdownMenu right>
                           <ul className="link-list-opt no-bdr">
                             <li>
                               <DropdownItem tag="a" href="#dropdownitem" onClick={(ev) => ev.preventDefault()}>
-                                <span>New Items</span>
+                                <span>Lowest Price</span>
                               </DropdownItem>
                             </li>
                             <li>
                               <DropdownItem tag="a" href="#dropdownitem" onClick={(ev) => ev.preventDefault()}>
-                                <span>Featured</span>
+                                <span>Highest Price</span>
                               </DropdownItem>
                             </li>
                             <li>
                               <DropdownItem tag="a" href="#dropdownitem" onClick={(ev) => ev.preventDefault()}>
-                                <span>Out of Stock</span>
+                                <span>A - Z</span>
+                              </DropdownItem>
+                            </li>
+                            <li>
+                              <DropdownItem tag="a" href="#dropdownitem" onClick={(ev) => ev.preventDefault()}>
+                                <span>Z - A</span>
                               </DropdownItem>
                             </li>
                           </ul>
@@ -301,15 +384,6 @@ const ProductList = () => {
                       </UncontrolledDropdown>
                     </li>
                     <li className="nk-block-tools-opt">
-                      <Button
-                        className="toggle btn-icon d-md-none"
-                        color="primary"
-                        onClick={() => {
-                          toggle("add");
-                        }}
-                      >
-                        <Icon name="plus"></Icon>
-                      </Button>
                       <Button
                         className="toggle d-none d-md-inline-flex"
                         color="primary"
@@ -753,11 +827,11 @@ const ProductList = () => {
                 <Col lg={6}>
                   <span className="sub-text">Product Category</span>
                   <span className="caption-text">
-                    {formData.category.map((item, index) => (
+                    {/* {formData.category.map((item, index) => (
                       <Badge key={index} className="mr-1" color="secondary">
                         {item.value}
                       </Badge>
-                    ))}
+                    ))} */}
                   </span>
                 </Col>
                 <Col lg={6}>
@@ -777,9 +851,6 @@ const ProductList = () => {
           <BlockHead>
             <BlockHeadContent>
               <BlockTitle tag="h5">Add Product</BlockTitle>
-              <BlockDes>
-                <p>Add information or update product.</p>
-              </BlockDes>
             </BlockHeadContent>
           </BlockHead>
           <Block>
@@ -787,36 +858,38 @@ const ProductList = () => {
               <Row className="g-3">
                 <Col size="12">
                   <div className="form-group">
-                    <label className="form-label" htmlFor="product-title">
-                      Product Title
+                    <label className="form-label" htmlFor="name">
+                      Product Name
                     </label>
                     <div className="form-control-wrap">
                       <input
                         type="text"
                         className="form-control"
-                        name="title"
+                        name="name"
+                        placeholder="Product Name"
                         onChange={(e) => onInputChange(e)}
                         ref={register({
                           required: "This field is required",
                         })}
                         defaultValue={formData.name}
                       />
-                      {errors.title && <span className="invalid">{errors.title.message}</span>}
+                      {errors.name && <span className="invalid">{errors.name.message}</span>}
                     </div>
                   </div>
                 </Col>
-                <Col md="6">
+                <Col size="12">
                   <div className="form-group">
-                    <label className="form-label" htmlFor="regular-price">
-                      Regular Price
+                    <label className="form-label" htmlFor="price">
+                      Price
                     </label>
                     <div className="form-control-wrap">
                       <input
                         type="number"
-                        name="price"
-                        ref={register({ required: "This is required" })}
-                        onChange={(e) => onInputChange(e)}
                         className="form-control"
+                        name="price"
+                        placeholder="Rp"
+                        onChange={(e) => onInputChange(e)}
+                        ref={register({ required: "Price is required" })}
                         defaultValue={formData.price}
                       />
                       {errors.price && <span className="invalid">{errors.price.message}</span>}
@@ -825,73 +898,96 @@ const ProductList = () => {
                 </Col>
                 <Col md="6">
                   <div className="form-group">
-                    <label className="form-label" htmlFor="sale-price">
-                      Sale Price
-                    </label>
-                    <div className="form-control-wrap">
-                      <input
-                        type="number"
-                        className="form-control"
-                        name="salePrice"
-                        onChange={(e) => onInputChange(e)}
-                        ref={register({ required: "This is required" })}
-                        defaultValue={formData.price}
-                      />
-                      {errors.salePrice && <span className="invalid">{errors.salePrice.message}</span>}
-                    </div>
-                  </div>
-                </Col>
-                <Col md="6">
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="stock">
+                    <label className="form-label" htmlFor="total_stock">
                       Stock
                     </label>
                     <div className="form-control-wrap">
                       <input
                         type="number"
                         className="form-control"
-                        name="stock"
+                        name="total_stock"
+                        placeholder="Stock"
                         onChange={(e) => onInputChange(e)}
                         ref={register({ required: "This is required" })}
-                        defaultValue={formData.stock}
+                        defaultValue={formData.total_stock}
                       />
-                      {errors.stock && <span className="invalid">{errors.stock.message}</span>}
+                      {errors.total_stock && <span className="invalid">{errors.total_stock.message}</span>}
                     </div>
                   </div>
                 </Col>
                 <Col md="6">
                   <div className="form-group">
-                    <label className="form-label" htmlFor="SKU">
-                      SKU
+                    <label className="form-label" htmlFor="unit">
+                      Unit
+                    </label>
+                    <div className="form-control-wrap">
+                      <select
+                        onChange={(e) => onInputChange(e)}
+                        className="form-control"
+                        name="unit"
+                        defaultValue={formData.unit}
+                        ref={register({ required: "This is required" })}
+                      >
+                        <option value={0}>Unit</option>
+                        {unitOptions.map((unit) => {
+                          return (
+                            <option key={unit.id} value={unit.value}>
+                              {unit.label}
+                            </option>
+                          );
+                        })}
+                      </select>
+                      {errMsg.unit && <span className="invalid">{errMsg.unit}</span>}
+                    </div>
+                  </div>
+                </Col>
+                <Col md="6">
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="unit_per_bottle">
+                      Unit per Bottle
                     </label>
                     <div className="form-control-wrap">
                       <input
-                        type="text"
-                        className="form-control"
-                        name="sku"
-                        onChange={(e) => onInputChange(e)}
+                        type="number"
+                        name="unit_per_bottle"
                         ref={register({ required: "This is required" })}
-                        defaultValue={formData.sku}
+                        onChange={(e) => onInputChange(e)}
+                        className="form-control"
+                        placeholder="100"
+                        defaultValue={formData.unit_per_bottle}
                       />
-                      {errors.sku && <span className="invalid">{errors.sku.message}</span>}
+                      {errors.unit_per_bottle && <span className="invalid">{errors.unit_per_bottle.message}</span>}
                     </div>
                   </div>
                 </Col>
                 <Col size="12">
                   <div className="form-group">
-                    <label className="form-label" htmlFor="category">
-                      Category
-                    </label>
+                    <div className="d-flex flex-row justify-content-between align-items-center mb-1">
+                      <label className="form-label" htmlFor="category_id">
+                        Category
+                      </label>
+                      <Button size="sm" className="toggle" color="primary" onClick={() => toggle("category")}>
+                        <Icon name="plus"></Icon>
+                      </Button>
+                    </div>
                     <div className="form-control-wrap">
-                      <RSelect
-                        name="category"
-                        isMulti
-                        options={categoryOptions}
-                        onChange={onCategoryChange}
-                        value={formData.category}
-                        //ref={register({ required: "This is required" })}
-                      />
-                      {errors.category && <span className="invalid">{errors.category.message}</span>}
+                      <select
+                        onChange={(e) => onInputChange(e)}
+                        className="form-control"
+                        name="category_id"
+                        defaultValue={formData.category_id}
+                        ref={register({ required: "This is required" })}
+                      >
+                        <option value={null}>Category</option>
+                        {categories.map((category) => {
+                          return (
+                            <option key={category.id} value={category.id}>
+                              {category.category}
+                            </option>
+                          );
+                        })}
+                      </select>
+                      {errMsg.category_id && <span className="invalid">{errMsg.category_id}</span>}
                     </div>
                   </div>
                 </Col>
@@ -916,6 +1012,25 @@ const ProductList = () => {
                       </section>
                     )}
                   </Dropzone>
+                  {errMsg.file && (
+                    <span style={{ color: "red", fontStyle: "italic", fontSize: 11 }}>{errMsg.file}</span>
+                  )}
+                </Col>
+                <Col size="12">
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="description">
+                      Description
+                    </label>
+                    <div className="form-control-wrap">
+                      <textarea
+                        className="form-control"
+                        name="description"
+                        placeholder="Product Description"
+                        onChange={(e) => onInputChange(e)}
+                        defaultValue={formData.description}
+                      />
+                    </div>
+                  </div>
                 </Col>
 
                 <Col size="12">
@@ -926,6 +1041,48 @@ const ProductList = () => {
                 </Col>
               </Row>
             </form>
+          </Block>
+        </SimpleBar>
+
+        <SimpleBar
+          className={`nk-add-product toggle-slide toggle-slide-right toggle-screen-any ${
+            view.category ? "content-active" : ""
+          }`}
+        >
+          <BlockHead>
+            <BlockHeadContent>
+              <BlockTitle tag="h5">Add Category</BlockTitle>
+            </BlockHeadContent>
+          </BlockHead>
+          <Block>
+            <Row className="g-3">
+              <Col size="12">
+                <div className="form-group">
+                  <label className="form-label" htmlFor="add_category">
+                    Category
+                  </label>
+                  <div className="form-control-wrap">
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="add_category"
+                      placeholder="Category"
+                      onChange={(e) => setAddCategory(e.target.value)}
+                      defaultValue={addCategory}
+                    />
+                  </div>
+                </div>
+              </Col>
+
+              <Col size="12">
+                <Button disabled={!addCategory} onClick={btnAddCategory} className="mr-2" color="primary">
+                  <span>Add Category</span>
+                </Button>
+                <Button onClick={() => setView({ ...view, category: false })} color="primary">
+                  <span>Cancel</span>
+                </Button>
+              </Col>
+            </Row>
           </Block>
         </SimpleBar>
 
