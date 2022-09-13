@@ -111,7 +111,13 @@ const Login = () => {
               </FormGroup>
             </Form>
             <div className="form-note-s2 text-center pt-4">
-              <Button size="lg" className="btn-block" onClick={() => dispatch(loginAdmin(inputData))} color="primary">
+              <Button
+                disabled={admin.isLoading}
+                size="lg"
+                className="btn-block"
+                onClick={() => dispatch(loginAdmin(inputData))}
+                color="primary"
+              >
                 {admin.isLoading ? <Spinner size="sm" color="light" /> : "Sign in"}
               </Button>
             </div>

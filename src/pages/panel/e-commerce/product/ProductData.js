@@ -585,43 +585,37 @@ export const productCardData = [
 
 export const categoryOptions = [
   {
-    value: "Gadget",
-    label: "Gadget",
+    value: 1,
+    label: "Category 1",
   },
   {
-    value: "Electronics",
-    label: "Electronics",
+    value: 2,
+    label: "Category 2",
   },
   {
-    label: "Watch",
-    value: "Watch",
+    value: 3,
+    label: "Category 3",
   },
   {
-    label: "Tracker",
-    value: "Tracker",
+    value: 4,
+    label: "Category 4",
+  },
+];
+
+export const unitOptions = [
+  {
+    id: 1,
+    label: "gram",
+    value: "gr",
   },
   {
-    label: "Fitbit",
-    value: "Fitbit",
+    id: 2,
+    label: "ml",
+    value: "ml",
   },
   {
-    label: "Men",
-    value: "Men",
-  },
-  {
-    label: "Holder",
-    value: "Holder",
-  },
-  {
-    label: "Speaker",
-    value: "Speaker",
-  },
-  {
-    label: "Headphones",
-    value: "Headphones",
-  },
-  {
-    label: "Bundle",
-    value: "Bundle",
+    id: 3,
+    label: "pcs",
+    value: "pcs",
   },
 ];

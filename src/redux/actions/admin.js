@@ -50,7 +50,7 @@ export const adminKeepLogin = (token) => {
   return async (dispatch) => {
     try {
       const response = await Axios.post(`${API_URL}/admin/keepLogin`, {
-        token: token,
+        token,
       });
 
       delete response.data.adminData.password;
