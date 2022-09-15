@@ -20,6 +20,9 @@ const userReducer = (
         error: true,
         errorMessage: action.error.message,
       };
+
+    ///////////////////////////////////////////////////////////////////////
+
     case "VERIFICATION_START":
       return { ...state, verifLoading: true, error: false };
     case "VERIFICATION_SUCCESS":
@@ -32,6 +35,28 @@ const userReducer = (
       };
     case "VERIFICATION_FAIL":
       return { ...state, verifLoading: false, error: false };
+
+    ///////////////////////////////////////////////////////////////////////
+    case "LOGIN_START":
+      return { ...state, loading: true, error: false };
+    case "LOGIN_SUCCESS":
+      localStorage.setItem("profile", JSON.stringify({ ...action?.data }));
+      return { ...state, authData: action.data, loading: false, error: false };
+    case "LOGIN_FAIL":
+      return {
+        ...state,
+        loading: false,
+        error: true,
+        errorMessage: action.error.message,
+      };
+    ///////////////////////////////////////////////////////////////////////
+
+    case "LOG_OUT":
+      localStorage.clear();
+      return { ...state, authData: null, loading: false, error: false };
+
+    ///////////////////////////////////////////////////////////////////////
+
     case "RESETPASS_START":
       return { ...state, resetLoading: true, error: false };
     case "RESETPASS_SUCCESS":
