@@ -583,38 +583,29 @@ export const productCardData = [
   },
 ];
 
-export const categoryOptions = [
-  {
-    value: 1,
-    label: "Category 1",
-  },
-  {
-    value: 2,
-    label: "Category 2",
-  },
-  {
-    value: 3,
-    label: "Category 3",
-  },
-  {
-    value: 4,
-    label: "Category 4",
-  },
-];
-
 export const unitOptions = [
   {
     id: 1,
     label: "gram",
-    value: "gr",
+    value: "gram",
   },
   {
     id: 2,
+    label: "kilogram",
+    value: "kg",
+  },
+  {
+    id: 3,
+    label: "liter",
+    value: "liter",
+  },
+  {
+    id: 4,
     label: "ml",
     value: "ml",
   },
   {
-    id: 3,
+    id: 5,
     label: "pcs",
     value: "pcs",
   },
