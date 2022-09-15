@@ -11,6 +11,7 @@ import { loginAdmin } from "../../redux/actions/admin";
 import { Link, Redirect } from "react-router-dom";
 
 const Login = () => {
+  const user = JSON.parse(window.localStorage.getItem("profile"));
   const admin = useSelector((state) => state.admin);
   const dispatch = useDispatch();
 
@@ -26,6 +27,10 @@ const Login = () => {
 
   if (admin.id) {
     return <Redirect to={"/admin"} />;
+  }
+
+  if (user) {
+    return <Redirect to={"/"} />;
   }
 
   return (

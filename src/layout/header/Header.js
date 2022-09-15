@@ -7,8 +7,12 @@ import Notification from "./dropdown/notification/Notification";
 import HeaderSearch from "../header-search/HeaderSearch";
 import ChatDropdown from "./dropdown/chat/Chat";
 import CartDropdown from "./dropdown/cart/Cart";
+import { useSelector } from "react-redux";
 
 const Header = ({ fixed, theme, className, setVisibility, ...props }) => {
+  const admin = useSelector((state) => state.admin);
+  const user = JSON.parse(window.localStorage.getItem("profile"));
+
   const headerClass = classNames({
     "nk-header": true,
     "nk-header-fixed": fixed,
@@ -27,7 +31,7 @@ const Header = ({ fixed, theme, className, setVisibility, ...props }) => {
               click={props.sidebarToggle}
             />
           </div>
-          <div className="nk-header-brand d-xl-none">
+          <div className={`nk-header-brand mr-3 ${window.location.pathname.includes("admin") && "d-xl-none"}`}>
             <Logo />
           </div>
           <div className="nk-header-search ml-3 ml-xl-0">
@@ -35,15 +39,19 @@ const Header = ({ fixed, theme, className, setVisibility, ...props }) => {
           </div>
           <div className="nk-header-tools">
             <ul className="nk-quick-nav">
-              <li className="cart-fill hide-mb-xs" onClick={() => setVisibility(false)}>
-                <CartDropdown />
-              </li>
-              <li className="chats-dropdown hide-mb-xs" onClick={() => setVisibility(false)}>
-                <ChatDropdown />
-              </li>
-              <li className="notification-dropdown mr-n1" onClick={() => setVisibility(false)}>
-                <Notification />
-              </li>
+              {admin.id || user ? (
+                <>
+                  <li className="cart-fill hide-mb-xs" onClick={() => setVisibility(false)}>
+                    <CartDropdown />
+                  </li>
+                  <li className="chats-dropdown hide-mb-xs" onClick={() => setVisibility(false)}>
+                    <ChatDropdown />
+                  </li>
+                  <li className="notification-dropdown mr-n1" onClick={() => setVisibility(false)}>
+                    <Notification />
+                  </li>
+                </>
+              ) : null}
               <li className="user-dropdown" onClick={() => setVisibility(false)}>
                 <User />
               </li>
