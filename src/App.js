@@ -28,6 +28,7 @@ import SuccessResetPass from "./pages/auth/SuccessResetPass";
 import VerifiedAdm from "./pages/auth/VerifiedAdm";
 import ForgotPasswordAdm from "./pages/auth/ForgotPasswordAdm";
 import ResetPasswordAdm from "./pages/auth/ResetPasswordAdm";
+import FailedLogin from "./pages/auth/FailedLogin";
 
 const App = () => {
   const admin = useSelector((state) => state.admin);
@@ -57,6 +58,7 @@ const App = () => {
         <Route exact path={`/auth-register`} component={Register}></Route>
         <Route exact path={`/adm`} component={LoginAdm}></Route>
         <Route exact path={`/auth-login`} component={Login}></Route>
+        <Route exact path={`/failed-login`} component={FailedLogin}></Route>
 
         {/* Print Pages */}
         <Route exact path={`/invoice-print/:id`} component={InvoicePrint}></Route>

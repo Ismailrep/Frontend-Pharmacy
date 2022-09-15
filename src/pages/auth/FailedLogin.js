@@ -7,10 +7,11 @@ import Head from "../../layout/head/Head";
 import AuthFooter from "./AuthFooter";
 import { Link } from "react-router-dom";
 
-const Success = () => {
+const FailedLogin = () => {
+  const user = JSON.parse(window.localStorage.getItem("profile"));
   return (
     <React.Fragment>
-      <Head title="Success" />
+      <Head title="Failed" />
       <PageContainer>
         <Block className="nk-block-middle nk-auth-body">
           <div className="brand-logo pb-5">
@@ -21,9 +22,15 @@ const Success = () => {
           </div>
           <BlockHead>
             <BlockContent>
-              <BlockTitle tag="h4">Thank you for registering your Ramu account</BlockTitle>
+              <BlockTitle tag="h4">Log In Failed!</BlockTitle>
               <BlockDes className="">
-                <p>Please check your e-mail for verification before you log in</p>
+                <p>
+                  {!user.is_verified
+                    ? "You haven't verified your account yet. Please check your e-mail for verification before you log in"
+                    : !user.active_status
+                    ? "Your account has been deactivated"
+                    : ""}
+                </p>
               </BlockDes>
             </BlockContent>
           </BlockHead>
@@ -33,4 +40,4 @@ const Success = () => {
     </React.Fragment>
   );
 };
-export default Success;
+export default FailedLogin;

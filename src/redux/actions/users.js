@@ -1,5 +1,3 @@
-import Axios from "axios";
-import { API_URL } from "../../constants/API";
 import * as UserApi from "../../API/UserRequest";
 
 // export const registerUser = (data) => {
@@ -30,6 +28,17 @@ import * as UserApi from "../../API/UserRequest";
 //     throw new Error(err.response.data.message);
 //   }
 // };
+
+export const logIn = (formData) => async (dispatch) => {
+  dispatch({ type: "LOGIN_START" });
+  try {
+    const { data } = await UserApi.logIn(formData);
+    dispatch({ type: "LOGIN_SUCCESS", data: data });
+  } catch (error) {
+    console.log(error);
+    dispatch({ type: "LOGIN_FAIL", error: error });
+  }
+};
 
 export const verifyUser = (uuid) => async (dispatch) => {
   dispatch({ type: "VERIFICATION_START" });

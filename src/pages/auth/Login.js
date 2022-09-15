@@ -17,29 +17,58 @@ import Head from "../../layout/head/Head";
 import AuthFooter from "./AuthFooter";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
+import { logIn } from "../../redux/actions/users";
+import { useDispatch } from "react-redux";
+import axios from "axios";
 
 const Login = () => {
+  // const initialState = {
+  //   email: "",
+  //   password: "",
+  // };
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [passState, setPassState] = useState(false);
   const [errorVal, setError] = useState("");
 
-  const onFormSubmit = (formData) => {
+  // const dispatch = useDispatch;
+  // const [data, setData] = useState(initialState);
+
+  const onFormSubmit = async () => {
+    // e.preventDefault();
     setLoading(true);
-    const loginName = "info@softnio.com";
-    const pass = "123456";
-    if (formData.name === loginName && formData.passcode === pass) {
-      localStorage.setItem("accessToken", "token");
+
+    try {
+      const response = await axios.post("http://localhost:2000/users/login", {
+        email: email,
+        password: password,
+      });
+
+      if (email === email && password === password) {
+        localStorage.setItem("profile", JSON.stringify(response.data));
+        const user = JSON.parse(window.localStorage.getItem("profile"));
+
+        setTimeout(() => {
+          if (user.active_status && user.is_verified) {
+            window.history.pushState(
+              `${process.env.PUBLIC_URL ? process.env.PUBLIC_URL : "/"}`,
+              "auth-login",
+              `${process.env.PUBLIC_URL ? process.env.PUBLIC_URL : "/"}`
+            );
+          } else {
+            window.history.pushState(
+              `${process.env.PUBLIC_URL ? process.env.PUBLIC_URL : "/"}`,
+              "auth-login",
+              `${process.env.PUBLIC_URL ? process.env.PUBLIC_URL : "/failed-login"}`
+            );
+          }
+          window.location.reload();
+        }, 2000);
+      }
+    } catch (error) {
       setTimeout(() => {
-        window.history.pushState(
-          `${process.env.PUBLIC_URL ? process.env.PUBLIC_URL : "/"}`,
-          "auth-login",
-          `${process.env.PUBLIC_URL ? process.env.PUBLIC_URL : "/"}`
-        );
-        window.location.reload();
-      }, 2000);
-    } else {
-      setTimeout(() => {
-        setError("Cannot login with credentials");
+        setError(error.response.data.msg);
         setLoading(false);
       }, 2000);
     }
@@ -62,9 +91,9 @@ const Login = () => {
           <PreviewCard className="card-bordered" bodyClass="card-inner-lg">
             <BlockHead>
               <BlockContent>
-                <BlockTitle tag="h4">Sign-In</BlockTitle>
+                <BlockTitle tag="h4">Log In</BlockTitle>
                 <BlockDes>
-                  <p>Access Dashlite using your email and passcode.</p>
+                  <p>Access RAMU using your email and password.</p>
                 </BlockDes>
               </BlockContent>
             </BlockHead>
@@ -72,7 +101,7 @@ const Login = () => {
               <div className="mb-3">
                 <Alert color="danger" className="alert-icon">
                   {" "}
-                  <Icon name="alert-circle" /> Unable to login with credentials{" "}
+                  <Icon name="alert-circle" /> {errorVal}{" "}
                 </Alert>
               </div>
             )}
@@ -80,7 +109,7 @@ const Login = () => {
               <FormGroup>
                 <div className="form-label-group">
                   <label className="form-label" htmlFor="default-01">
-                    Email or Username
+                    Email
                   </label>
                 </div>
                 <div className="form-control-wrap">
@@ -88,9 +117,9 @@ const Login = () => {
                     type="text"
                     id="default-01"
                     name="name"
-                    ref={register({ required: "This field is required" })}
-                    defaultValue="info@softnio.com"
-                    placeholder="Enter your email address or username"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
                     className="form-control-lg form-control"
                   />
                   {errors.name && <span className="invalid">{errors.name.message}</span>}
@@ -99,10 +128,10 @@ const Login = () => {
               <FormGroup>
                 <div className="form-label-group">
                   <label className="form-label" htmlFor="password">
-                    Passcode
+                    Password
                   </label>
                   <Link className="link link-primary link-sm" to={`/auth-reset`}>
-                    Forgot Code?
+                    Forgot Password?
                   </Link>
                 </div>
                 <div className="form-control-wrap">
@@ -122,9 +151,10 @@ const Login = () => {
                     type={passState ? "text" : "password"}
                     id="password"
                     name="passcode"
-                    defaultValue="123456"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     ref={register({ required: "This field is required" })}
-                    placeholder="Enter your passcode"
+                    placeholder="Enter your password"
                     className={`form-control-lg form-control ${passState ? "is-hidden" : "is-shown"}`}
                   />
                   {errors.passcode && <span className="invalid">{errors.passcode.message}</span>}
@@ -132,7 +162,7 @@ const Login = () => {
               </FormGroup>
               <FormGroup>
                 <Button size="lg" className="btn-block" type="submit" color="primary">
-                  {loading ? <Spinner size="sm" color="light" /> : "Sign in"}
+                  {loading ? <Spinner size="sm" color="light" /> : "Log In"}
                 </Button>
               </FormGroup>
             </Form>
