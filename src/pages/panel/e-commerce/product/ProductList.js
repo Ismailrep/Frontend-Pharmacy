@@ -8,7 +8,6 @@ import {
   BlockTitle,
   BlockBetween,
   BlockHeadContent,
-  BlockDes,
   Icon,
   Row,
   Col,
@@ -17,11 +16,10 @@ import {
   DataTableRow,
   DataTableItem,
   PaginationComponent,
-  RSelect,
   PreviewAltCard,
 } from "../../../../components/Component";
-import { DropdownItem, UncontrolledDropdown, DropdownMenu, DropdownToggle, Badge } from "reactstrap";
-import { productData, categoryOptions, unitOptions } from "./ProductData";
+import { DropdownItem, UncontrolledDropdown, DropdownMenu, DropdownToggle } from "reactstrap";
+import { productData, unitOptions } from "./ProductData";
 import SimpleBar from "simplebar-react";
 import { useForm } from "react-hook-form";
 import ProductH from "../../../../images/product/h.png";
@@ -34,9 +32,15 @@ import { API_URL } from "../../../../constants/API";
 const ProductList = () => {
   const admin = useSelector((state) => state.admin);
 
+  // DATA
   const [data, setData] = useState(productData);
+  const [products, setProducts] = useState([]);
+  const [productCount, setProductCount] = useState(0);
   const [sm, updateSm] = useState(false);
   const [categories, setCategories] = useState([]);
+
+  // INPUTS
+  const [files, setFiles] = useState([]);
   const [formData, setFormData] = useState({
     category_id: null,
     name: "",
@@ -45,24 +49,62 @@ const ProductList = () => {
     unit: "",
     unit_per_bottle: null,
     description: "",
+    category: {},
     fav: false,
     check: false,
   });
   const [addCategory, setAddCategory] = useState("");
-  const [editId, setEditedId] = useState();
   const [view, setView] = useState({
     edit: false,
     add: false,
     category: false,
     details: false,
   });
-  const [onSearchText, setSearchText] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemPerPage] = useState(7);
-  const [files, setFiles] = useState([]);
-
   const [errMsg, setErrMsg] = useState({});
 
+  // SORT AND FILTER
+  const [onSearchText, setSearchText] = useState("");
+  const [categoryId, setCategoryId] = useState(null);
+  const [sortBy, setSortBy] = useState({ name: true, asc: true });
+
+  // PAGINATION
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemPerPage] = useState(5);
+
+  // CONVERT PRICE TO CURRENCY TYPE
+  const toCurrency = (data) => {
+    const locale = new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumSignificantDigits: 3,
+    });
+    return locale.format(data);
+  };
+
+  // GET IMAGE URL
+  const getImageUrl = (image) => {
+    return `${API_URL}/products/${image}`;
+  };
+
+  // GET PRODUCTS
+  const getProducts = async (page) => {
+    try {
+      const response = await axios.post(`${API_URL}/products/getProducts`, {
+        name: onSearchText,
+        category_id: categoryId,
+        sortBy,
+        page,
+        perPage: itemPerPage,
+      });
+
+      setProducts(response.data.products);
+      setProductCount(response.data.count);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // GET CATEGORIES
   const getCategories = async () => {
     try {
       let tempCategories = [];
@@ -78,7 +120,9 @@ const ProductList = () => {
 
   useEffect(() => {
     getCategories();
-  }, []);
+    getProducts(1);
+    setCurrentPage(1);
+  }, [onSearchText, categoryId, sortBy]);
 
   // Changing state value when searching name
   useEffect(() => {
@@ -92,10 +136,6 @@ const ProductList = () => {
     }
   }, [onSearchText]);
 
-  const inputHandler = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
   // OnChange function to get the input data
   const onInputChange = (e) => {
     const number = /^[0-9]*$/;
@@ -106,22 +146,13 @@ const ProductList = () => {
     }
   };
 
-  // category change
-  const onCategoryChange = (value) => {
-    setFormData({ ...formData, category: value });
-  };
-
-  // unit change
-  const onUnitChange = (value) => {
-    setFormData({ ...formData, unit: value });
-  };
-
   // function to close the form modal
   const onFormCancel = () => {
     setView({ edit: false, add: false, details: false });
     resetForm();
   };
 
+  // RESET INPUT STATE
   const resetForm = () => {
     setFormData({
       category_id: null,
@@ -131,12 +162,13 @@ const ProductList = () => {
       unit: "",
       unit_per_bottle: null,
       description: "",
-      fav: false,
+      category: {},
       check: false,
     });
     reset({});
   };
 
+  // ADD NEW CATEGORY
   const btnAddCategory = async () => {
     try {
       await axios.post(`${API_URL}/products/addCategory`, { addCategory });
@@ -147,18 +179,19 @@ const ProductList = () => {
     }
   };
 
-  const onFormSubmit = () => {
+  // ADD PRODUCT
+  const onFormSubmit = async () => {
     try {
       if (!formData.unit) return setErrMsg({ unit: "Unit is required" });
       if (!formData.category_id) return setErrMsg({ category_id: "Category is required" });
       if (!files.length) return setErrMsg({ file: "Image is required" });
       let form = new FormData();
-      form.append("file", files[0]);
+      await form.append("file", files[0]);
       for (let key in formData) {
-        form.append(key, formData[key]);
+        await form.append(key, formData[key]);
       }
-      axios.post(`${API_URL}/products/addProduct`, form);
-      // setData([submittedData, ...data]);
+      await axios.post(`${API_URL}/products/addProduct`, form);
+      getProducts(currentPage);
       setView({ open: false });
       setFiles([]);
       resetForm();
@@ -167,49 +200,26 @@ const ProductList = () => {
     }
   };
 
-  const onEditSubmit = () => {
-    let submittedData;
-    let newItems = data;
-    let index = newItems.findIndex((item) => item.id === editId);
-
-    newItems.forEach((item) => {
-      if (item.id === editId) {
-        submittedData = {
-          id: editId,
-          name: formData.name,
-          img: files.length > 0 ? files[0].preview : item.img,
-          sku: formData.sku,
-          price: formData.price,
-          stock: formData.stock,
-          category: formData.category,
-          fav: false,
-          check: false,
-        };
+  // UPDATE PRODUCT
+  const onEditSubmit = async () => {
+    try {
+      let form = new FormData();
+      form.append("file", files[0]);
+      for (let key in formData) {
+        form.append(key, formData[key]);
       }
-    });
-    newItems[index] = submittedData;
-    //setData(newItems);
-    resetForm();
-    setView({ edit: false, add: false });
+      await axios.patch(`${API_URL}/products/updateProduct`, form);
+      getProducts(currentPage);
+      resetForm();
+      setView({ edit: false, add: false });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   // function that loads the want to editted data
-  const onEditClick = (id) => {
-    data.forEach((item) => {
-      if (item.id === id) {
-        setFormData({
-          name: item.name,
-          img: item.img,
-          sku: item.sku,
-          price: item.price,
-          stock: item.stock,
-          category: item.category,
-          fav: false,
-          check: false,
-        });
-      }
-    });
-    setEditedId(id);
+  const onEditClick = (item) => {
+    setFormData(item);
     setFiles([]);
     setView({ add: false, edit: true });
   };
@@ -238,10 +248,23 @@ const ProductList = () => {
   };
 
   // function to delete a product
-  const deleteProduct = (id) => {
-    let defaultData = data;
-    defaultData = defaultData.filter((item) => item.id !== id);
-    setData([...defaultData]);
+  const deleteProduct = async (id) => {
+    try {
+      await axios.patch(`${API_URL}/products/delete/${id}`);
+      getProducts(currentPage);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // Restore Deleted Product
+  const setActive = async (id) => {
+    try {
+      await axios.patch(`${API_URL}/products/setActive/${id}`);
+      getProducts(currentPage);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   // function to delete the seletected item
@@ -275,13 +298,11 @@ const ProductList = () => {
     );
   };
 
-  // Get current list, pagination
-  const indexOfLastItem = currentPage * itemPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemPerPage;
-  const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
-
   // Change Page
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    getProducts(pageNumber);
+  };
 
   const { errors, register, handleSubmit, reset } = useForm();
 
@@ -321,68 +342,52 @@ const ProductList = () => {
                           type="text"
                           className="form-control"
                           id="default-04"
-                          placeholder="Quick search by SKU"
+                          placeholder="Quick search by Name"
                           onChange={(e) => onFilterChange(e)}
                         />
                       </div>
                     </li>
+
                     <li>
-                      <UncontrolledDropdown>
-                        <DropdownToggle
-                          color="transparent"
-                          className="dropdown-toggle dropdown-indicator btn btn-outline-light btn-white"
-                        >
-                          Category
-                        </DropdownToggle>
-                        <DropdownMenu right>
-                          <ul className="link-list-opt no-bdr">
-                            {categories.map((item) => {
-                              return (
-                                <li key={item.id}>
-                                  <DropdownItem tag="a" href="#dropdownitem" onClick={(ev) => ev.preventDefault()}>
-                                    <span>{item.category}</span>
-                                  </DropdownItem>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        </DropdownMenu>
-                      </UncontrolledDropdown>
+                      <select
+                        onChange={(e) => setCategoryId(+e.target.value)}
+                        className="form-control pr-2"
+                        name="category_id"
+                        defaultValue={formData.category_id}
+                        ref={register({ required: "This is required" })}
+                      >
+                        <option value={null}>All Category</option>
+                        {categories.map((category) => {
+                          return (
+                            <option key={category.id} value={category.id}>
+                              {category.category}
+                            </option>
+                          );
+                        })}
+                      </select>
                     </li>
+
                     <li>
-                      <UncontrolledDropdown>
-                        <DropdownToggle
-                          color="transparent"
-                          className="dropdown-toggle dropdown-indicator btn btn-outline-light btn-white"
-                        >
-                          Sort by
-                        </DropdownToggle>
-                        <DropdownMenu right>
-                          <ul className="link-list-opt no-bdr">
-                            <li>
-                              <DropdownItem tag="a" href="#dropdownitem" onClick={(ev) => ev.preventDefault()}>
-                                <span>Lowest Price</span>
-                              </DropdownItem>
-                            </li>
-                            <li>
-                              <DropdownItem tag="a" href="#dropdownitem" onClick={(ev) => ev.preventDefault()}>
-                                <span>Highest Price</span>
-                              </DropdownItem>
-                            </li>
-                            <li>
-                              <DropdownItem tag="a" href="#dropdownitem" onClick={(ev) => ev.preventDefault()}>
-                                <span>A - Z</span>
-                              </DropdownItem>
-                            </li>
-                            <li>
-                              <DropdownItem tag="a" href="#dropdownitem" onClick={(ev) => ev.preventDefault()}>
-                                <span>Z - A</span>
-                              </DropdownItem>
-                            </li>
-                          </ul>
-                        </DropdownMenu>
-                      </UncontrolledDropdown>
+                      <select
+                        onChange={(e) => {
+                          e.target.value.includes("name")
+                            ? e.target.value.includes("asc")
+                              ? setSortBy({ name: true, asc: true })
+                              : setSortBy({ name: true, asc: false })
+                            : e.target.value.includes("asc")
+                            ? setSortBy({ name: false, asc: true })
+                            : setSortBy({ name: false, asc: false });
+                        }}
+                        className="form-control"
+                        name="sort"
+                      >
+                        <option value="nameasc">A - Z</option>
+                        <option value="namedesc">Z - A</option>
+                        <option value="priceasc">Lowest Price</option>
+                        <option value="pricedesc">Highest Price</option>
+                      </select>
                     </li>
+
                     <li className="nk-block-tools-opt">
                       <Button
                         className="toggle d-none d-md-inline-flex"
@@ -419,21 +424,31 @@ const ProductList = () => {
               <DataTableRow size="sm">
                 <span>Name</span>
               </DataTableRow>
-              <DataTableRow>
-                <span>SKU</span>
-              </DataTableRow>
+
               <DataTableRow>
                 <span>Price</span>
               </DataTableRow>
+
+              <DataTableRow>
+                <span>Category</span>
+              </DataTableRow>
+
               <DataTableRow>
                 <span>Stock</span>
               </DataTableRow>
+
               <DataTableRow size="md">
-                <span>Category</span>
+                <span>Per Bottle</span>
               </DataTableRow>
+
               <DataTableRow size="md">
-                <Icon name="star-round" className="tb-asterisk"></Icon>
+                <span>Stock(Bottle)</span>
               </DataTableRow>
+
+              <DataTableRow size="md">
+                <span>Status</span>
+              </DataTableRow>
+
               <DataTableRow className="nk-tb-col-tools">
                 <ul className="nk-tb-actions gx-1 my-n1">
                   <li className="mr-n1">
@@ -454,6 +469,7 @@ const ProductList = () => {
                               <span>Edit Selected</span>
                             </DropdownItem>
                           </li>
+
                           <li>
                             <DropdownItem
                               tag="a"
@@ -467,12 +483,14 @@ const ProductList = () => {
                               <span>Remove Selected</span>
                             </DropdownItem>
                           </li>
+
                           <li>
                             <DropdownItem tag="a" href="#stock" onClick={(ev) => ev.preventDefault()}>
                               <Icon name="bar-c"></Icon>
                               <span>Update Stock</span>
                             </DropdownItem>
                           </li>
+
                           <li>
                             <DropdownItem tag="a" href="#price" onClick={(ev) => ev.preventDefault()}>
                               <Icon name="invest"></Icon>
@@ -486,8 +504,9 @@ const ProductList = () => {
                 </ul>
               </DataTableRow>
             </DataTableHead>
-            {currentItems.length > 0
-              ? currentItems.map((item) => {
+
+            {products.length
+              ? products.map((item) => {
                   return (
                     <DataTableItem key={item.id}>
                       <DataTableRow className="nk-tb-col-check">
@@ -497,7 +516,7 @@ const ProductList = () => {
                             className="custom-control-input form-control"
                             defaultChecked={item.check}
                             id={item.id + "uid1"}
-                            key={Math.random()}
+                            // key={Math.random()}
                             onChange={(e) => onSelectChange(e, item.id)}
                           />
                           <label className="custom-control-label" htmlFor={item.id + "uid1"}></label>
@@ -505,39 +524,35 @@ const ProductList = () => {
                       </DataTableRow>
                       <DataTableRow size="sm">
                         <span className="tb-product">
-                          <img src={item.img ? item.img : ProductH} alt="product" className="thumb" />
+                          <img src={item.image ? getImageUrl(item.image) : ProductH} alt="product" className="thumb" />
                           <span className="title">{item.name}</span>
                         </span>
                       </DataTableRow>
                       <DataTableRow>
-                        <span className="tb-sub">{item.sku}</span>
+                        <span className="tb-sub">{toCurrency(item.price)}</span>
                       </DataTableRow>
                       <DataTableRow>
-                        <span className="tb-sub">$ {item.price}</span>
+                        <span className="tb-sub">{item.category.category}</span>
                       </DataTableRow>
                       <DataTableRow>
-                        <span className="tb-sub">{item.stock}</span>
-                      </DataTableRow>
-                      <DataTableRow size="md">
                         <span className="tb-sub">
-                          {item.category.map((cat) => {
-                            if (item.category[cat] + 1 === null || undefined) {
-                              return cat.label;
-                            } else return cat.label + ", ";
-                          })}
+                          {Intl.NumberFormat("de-DE").format(item.total_stock)} {item.unit}
                         </span>
                       </DataTableRow>
                       <DataTableRow size="md">
-                        <div className="asterisk tb-asterisk">
-                          <a
-                            href="#asterisk"
-                            className={item.fav ? "active" : ""}
-                            onClick={(ev) => ev.preventDefault()}
-                          >
-                            <Icon name="star" className="asterisk-off"></Icon>
-                            <Icon name="star-fill" className="asterisk-on"></Icon>
-                          </a>
-                        </div>
+                        <span className="tb-sub">
+                          {Intl.NumberFormat("de-DE").format(item.unit_per_bottle)} {item.unit}
+                        </span>
+                      </DataTableRow>
+                      <DataTableRow size="md">
+                        <span className="tb-sub">{item.stock_bottle}</span>
+                      </DataTableRow>
+                      <DataTableRow size="md">
+                        {item.is_deleted ? (
+                          <span className="text-danger">Deleted</span>
+                        ) : (
+                          <span className="text-success">Active</span>
+                        )}
                       </DataTableRow>
                       <DataTableRow className="nk-tb-col-tools">
                         <ul className="nk-tb-actions gx-1 my-n1">
@@ -559,7 +574,7 @@ const ProductList = () => {
                                       href="#edit"
                                       onClick={(ev) => {
                                         ev.preventDefault();
-                                        onEditClick(item.id);
+                                        onEditClick(item);
                                         toggle("edit");
                                       }}
                                     >
@@ -573,7 +588,7 @@ const ProductList = () => {
                                       href="#view"
                                       onClick={(ev) => {
                                         ev.preventDefault();
-                                        onEditClick(item.id);
+                                        onEditClick(item);
                                         toggle("details");
                                       }}
                                     >
@@ -582,17 +597,31 @@ const ProductList = () => {
                                     </DropdownItem>
                                   </li>
                                   <li>
-                                    <DropdownItem
-                                      tag="a"
-                                      href="#remove"
-                                      onClick={(ev) => {
-                                        ev.preventDefault();
-                                        deleteProduct(item.id);
-                                      }}
-                                    >
-                                      <Icon name="trash"></Icon>
-                                      <span>Remove Product</span>
-                                    </DropdownItem>
+                                    {item.is_deleted ? (
+                                      <DropdownItem
+                                        tag="a"
+                                        href="#remove"
+                                        onClick={(ev) => {
+                                          ev.preventDefault();
+                                          setActive(item.id);
+                                        }}
+                                      >
+                                        <Icon name="eye"></Icon>
+                                        <span>Set Active</span>
+                                      </DropdownItem>
+                                    ) : (
+                                      <DropdownItem
+                                        tag="a"
+                                        href="#remove"
+                                        onClick={(ev) => {
+                                          ev.preventDefault();
+                                          deleteProduct(item.id);
+                                        }}
+                                      >
+                                        <Icon name="trash"></Icon>
+                                        <span>Remove Product</span>
+                                      </DropdownItem>
+                                    )}
                                   </li>
                                 </ul>
                               </DropdownMenu>
@@ -605,11 +634,12 @@ const ProductList = () => {
                 })
               : null}
           </div>
+
           <PreviewAltCard>
-            {data.length > 0 ? (
+            {products.length ? (
               <PaginationComponent
                 itemPerPage={itemPerPage}
-                totalItems={data.length}
+                totalItems={productCount}
                 paginate={paginate}
                 currentPage={currentPage}
               />
@@ -641,7 +671,7 @@ const ProductList = () => {
                     <Col size="12">
                       <div className="form-group">
                         <label className="form-label" htmlFor="product-title">
-                          Product Title
+                          Product Name
                         </label>
                         <div className="form-control-wrap">
                           <input
@@ -654,14 +684,14 @@ const ProductList = () => {
                             })}
                             defaultValue={formData.name}
                           />
-                          {errors.title && <span className="invalid">{errors.title.message}</span>}
+                          {errors.name && <span className="invalid">{errors.name.message}</span>}
                         </div>
                       </div>
                     </Col>
-                    <Col md="6">
+                    <Col size="12">
                       <div className="form-group">
-                        <label className="form-label" htmlFor="regular-price">
-                          Regular Price
+                        <label className="form-label" htmlFor="price">
+                          Price
                         </label>
                         <div className="form-control-wrap">
                           <input
@@ -678,72 +708,104 @@ const ProductList = () => {
                     </Col>
                     <Col md="6">
                       <div className="form-group">
-                        <label className="form-label" htmlFor="sale-price">
-                          Sale Price
-                        </label>
-                        <div className="form-control-wrap">
-                          <input
-                            type="number"
-                            className="form-control"
-                            name="salePrice"
-                            onChange={(e) => onInputChange(e)}
-                            ref={register({ required: "This is required" })}
-                            defaultValue={formData.price}
-                          />
-                          {errors.salePrice && <span className="invalid">{errors.salePrice.message}</span>}
-                        </div>
-                      </div>
-                    </Col>
-                    <Col md="6">
-                      <div className="form-group">
-                        <label className="form-label" htmlFor="stock">
+                        <label className="form-label" htmlFor="total_stock">
                           Stock
                         </label>
                         <div className="form-control-wrap">
                           <input
                             type="number"
                             className="form-control"
-                            name="stock"
+                            name="total_stock"
                             onChange={(e) => onInputChange(e)}
                             ref={register({ required: "This is required" })}
-                            defaultValue={formData.stock}
+                            defaultValue={formData.total_stock}
                           />
-                          {errors.stock && <span className="invalid">{errors.stock.message}</span>}
+                          {errors.total_stock && <span className="invalid">{errors.total_stock.message}</span>}
                         </div>
                       </div>
                     </Col>
                     <Col md="6">
                       <div className="form-group">
-                        <label className="form-label" htmlFor="SKU">
-                          SKU
+                        <label className="form-label" htmlFor="unit">
+                          Unit
+                        </label>
+                        <div className="form-control-wrap">
+                          <select
+                            onChange={(e) => onInputChange(e)}
+                            className="form-control"
+                            name="unit"
+                            defaultValue={formData.unit}
+                            ref={register({ required: "This is required" })}
+                          >
+                            <option value={0}>Unit</option>
+                            {unitOptions.map((unit) => {
+                              return (
+                                <option key={unit.id} value={unit.value}>
+                                  {unit.label}
+                                </option>
+                              );
+                            })}
+                          </select>
+                          {errMsg.unit && <span className="invalid">{errMsg.unit}</span>}
+                        </div>
+                      </div>
+                    </Col>
+                    <Col md="6">
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="unit_per_bottle">
+                          Per Bottle({formData.unit})
                         </label>
                         <div className="form-control-wrap">
                           <input
-                            type="text"
+                            type="number"
                             className="form-control"
-                            name="sku"
+                            name="unit_per_bottle"
                             onChange={(e) => onInputChange(e)}
                             ref={register({ required: "This is required" })}
-                            defaultValue={formData.sku}
+                            defaultValue={formData.unit_per_bottle}
                           />
-                          {errors.sku && <span className="invalid">{errors.sku.message}</span>}
+                          {errors.unit_per_bottle && <span className="invalid">{errors.unit_per_bottle.message}</span>}
+                        </div>
+                      </div>
+                    </Col>
+                    <Col md="6">
+                      <div className="form-group">
+                        <label className="form-label">Stock(Bottle)</label>
+                        <div className="form-control-wrap">
+                          <input
+                            disabled={true}
+                            type="number"
+                            className="form-control"
+                            value={
+                              formData.total_stock ? Math.floor(formData.total_stock / formData.unit_per_bottle) : 0
+                            }
+                          />
                         </div>
                       </div>
                     </Col>
                     <Col size="12">
                       <div className="form-group">
-                        <label className="form-label" htmlFor="category">
+                        <label className="form-label" htmlFor="category_id">
                           Category
                         </label>
                         <div className="form-control-wrap">
-                          <RSelect
-                            isMulti
-                            options={categoryOptions}
-                            defaultValue={formData.category}
-                            onChange={onCategoryChange}
-                            //ref={register({ required: "This is required" })}
-                          />
-                          {errors.category && <span className="invalid">{errors.category.message}</span>}
+                          <select
+                            onChange={(e) => onInputChange(e)}
+                            className="form-control"
+                            name="category_id"
+                            defaultValue={formData.category_id}
+                            ref={register({ required: "This is required" })}
+                          >
+                            <option value={null}>Category</option>
+                            {categories.map((category) => {
+                              return (
+                                <option key={category.id} value={category.id}>
+                                  {category.category}
+                                </option>
+                              );
+                            })}
+                          </select>
+                          {errMsg.category_id && <span className="invalid">{errMsg.category_id}</span>}
                         </div>
                       </div>
                     </Col>
@@ -753,35 +815,50 @@ const ProductList = () => {
                           Product Image
                         </label>
                         <div className="form-control-wrap">
-                          <img src={formData.img} alt=""></img>
+                          <Dropzone onDrop={(acceptedFiles) => handleDropChange(acceptedFiles)}>
+                            {({ getRootProps, getInputProps }) => (
+                              <section>
+                                <div
+                                  {...getRootProps()}
+                                  className="dropzone upload-zone small bg-lighter my-2 dz-clickable"
+                                >
+                                  <input {...getInputProps()} />
+                                  {files.length === 0 && formData.image && (
+                                    <img src={getImageUrl(formData.image)} alt="preview" />
+                                  )}
+                                  {files.map((file) => (
+                                    <div
+                                      key={file.name}
+                                      className="dz-preview dz-processing dz-image-preview dz-error dz-complete"
+                                    >
+                                      <div className="">
+                                        <img src={file.preview} alt="preview" />
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </section>
+                            )}
+                          </Dropzone>
                         </div>
                       </div>
                     </Col>
                     <Col size="6">
-                      <Dropzone onDrop={(acceptedFiles) => handleDropChange(acceptedFiles)}>
-                        {({ getRootProps, getInputProps }) => (
-                          <section>
-                            <div
-                              {...getRootProps()}
-                              className="dropzone upload-zone small bg-lighter my-2 dz-clickable"
-                            >
-                              <input {...getInputProps()} />
-                              {files.length === 0 && <p>Drag 'n' drop some files here, or click to select files</p>}
-                              {files.map((file) => (
-                                <div
-                                  key={file.name}
-                                  className="dz-preview dz-processing dz-image-preview dz-error dz-complete"
-                                >
-                                  <div className="dz-image">
-                                    <img src={file.preview} alt="preview" />
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </section>
-                        )}
-                      </Dropzone>
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="description">
+                          Description
+                        </label>
+                        <div className="form-control-wrap">
+                          <textarea
+                            className="form-control"
+                            name="description"
+                            onChange={(e) => onInputChange(e)}
+                            defaultValue={formData.description}
+                          />
+                        </div>
+                      </div>
                     </Col>
+                    <Col size="12"></Col>
 
                     <Col size="12">
                       <Button color="primary" type="submit">
@@ -810,33 +887,36 @@ const ProductList = () => {
             </a>
             <div className="nk-modal-head">
               <h4 className="nk-modal-title title">
-                Product <small className="text-primary">#{formData.sku}</small>
+                Product Details
+                {/* <small className="text-primary">#{formData.sku}</small> */}
               </h4>
-              <img src={formData.img} alt="" />
             </div>
             <div className="nk-tnx-details mt-sm-3">
               <Row className="gy-3">
+                <Col lg={6}>
+                  <img src={formData.image ? getImageUrl(formData.image) : ProductH} alt="product" />
+                </Col>
+                <Col lg={6}>
+                  <span className="sub-text">Description</span>
+                  <p>{formData.description ? formData.description : "no description"}</p>
+                </Col>
                 <Col lg={6}>
                   <span className="sub-text">Product Name</span>
                   <span className="caption-text">{formData.name}</span>
                 </Col>
                 <Col lg={6}>
                   <span className="sub-text">Product Price</span>
-                  <span className="caption-text">$ {formData.price}</span>
+                  <span className="caption-text">{toCurrency(formData.price)}</span>
                 </Col>
                 <Col lg={6}>
                   <span className="sub-text">Product Category</span>
-                  <span className="caption-text">
-                    {/* {formData.category.map((item, index) => (
-                      <Badge key={index} className="mr-1" color="secondary">
-                        {item.value}
-                      </Badge>
-                    ))} */}
-                  </span>
+                  <span className="caption-text">{formData.category.category}</span>
                 </Col>
                 <Col lg={6}>
                   <span className="sub-text">Stock</span>
-                  <span className="caption-text"> {formData.stock}</span>
+                  <span className="caption-text">
+                    {formData.total_stock} {formData.unit}
+                  </span>
                 </Col>
               </Row>
             </div>
@@ -877,7 +957,7 @@ const ProductList = () => {
                     </div>
                   </div>
                 </Col>
-                <Col size="12">
+                <Col md="6">
                   <div className="form-group">
                     <label className="form-label" htmlFor="price">
                       Price
@@ -896,6 +976,7 @@ const ProductList = () => {
                     </div>
                   </div>
                 </Col>
+                <Col md="6" />
                 <Col md="6">
                   <div className="form-group">
                     <label className="form-label" htmlFor="total_stock">
@@ -944,7 +1025,7 @@ const ProductList = () => {
                 <Col md="6">
                   <div className="form-group">
                     <label className="form-label" htmlFor="unit_per_bottle">
-                      Unit per Bottle
+                      Per Bottle({formData.unit})
                     </label>
                     <div className="form-control-wrap">
                       <input
@@ -957,6 +1038,23 @@ const ProductList = () => {
                         defaultValue={formData.unit_per_bottle}
                       />
                       {errors.unit_per_bottle && <span className="invalid">{errors.unit_per_bottle.message}</span>}
+                    </div>
+                  </div>
+                </Col>
+                <Col md="6">
+                  <div className="form-group">
+                    <label className="form-label">Stock(Bottle)</label>
+                    <div className="form-control-wrap">
+                      <input
+                        disabled={true}
+                        type="number"
+                        className="form-control"
+                        value={
+                          formData.total_stock && formData.unit_per_bottle
+                            ? Math.floor(formData.total_stock / formData.unit_per_bottle)
+                            : 0
+                        }
+                      />
                     </div>
                   </div>
                 </Col>
@@ -1003,7 +1101,7 @@ const ProductList = () => {
                               key={file.name}
                               className="dz-preview dz-processing dz-image-preview dz-error dz-complete"
                             >
-                              <div className="dz-image">
+                              <div className="">
                                 <img src={file.preview} alt="preview" />
                               </div>
                             </div>
