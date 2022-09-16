@@ -1,14 +1,6 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Head from "../../../layout/head/Head";
 import Content from "../../../layout/content/Content";
-import Dropzone from "react-dropzone";
-import ProductH from "../../../images/product/h.png";
-import ProductLGB from "../../../images/product/lg-b.jpg";
-import ProductLGC from "../../../images/product/lg-c.jpg";
-import ProductLGD from "../../../images/product/lg-d.jpg";
-import ProductLGE from "../../../images/product/lg-e.jpg";
-import ProductLGF from "../../../images/product/lg-f.jpg";
-import SimpleBar from "simplebar-react";
 import { Link } from "react-router-dom";
 import {
   BlockHead,
@@ -25,79 +17,119 @@ import {
 } from "../../../components/Component";
 import { useForm } from "react-hook-form";
 import { Card, DropdownItem, UncontrolledDropdown, DropdownMenu, DropdownToggle, Badge } from "reactstrap";
-import { ProductContext } from "./ProductContext";
-import { productCardData } from "./ProductData";
+import axios from "axios";
+import { API_URL } from "../../../constants/API";
+import { productData, unitOptions } from "../../panel/e-commerce/product/ProductData";
 
 const ProductCard = () => {
-  const { contextData } = useContext(ProductContext);
-  const [data, setData] = contextData;
+  const [data, setData] = useState(productData);
 
   const [sm, updateSm] = useState(false);
-  const [formData] = useState({
+  const [formData, setFormData] = useState({
+    category_id: null,
     name: "",
-    img: null,
-    title: "",
-    prevPrice: 0,
-    newPrice: 0,
-    type: "",
-    new: false,
-    hot: false,
-    like: false,
-    cart: false,
+    price: null,
+    total_stock: null,
+    unit: "",
+    unit_per_bottle: null,
+    description: "",
+    category: {},
+    fav: false,
+    check: false,
   });
-  const [view, setView] = useState(false);
+  const [view, setView] = useState({
+    edit: false,
+    add: false,
+    category: false,
+    details: false,
+  });
   const [filter, setFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemPerPage] = useState(8);
   const [files, setFiles] = useState([]);
+  const [productCount, setProductCount] = useState(0);
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [errMsg, setErrMsg] = useState({});
+
+  // SORT AND FILTER
+  const [onSearchText, setSearchText] = useState("");
+  const [categoryId, setCategoryId] = useState(null);
+  const [sortBy, setSortBy] = useState({ name: true, asc: true });
+
+  // CONVERT PRICE TO CURRENCY TYPE
+  const toCurrency = (data) => {
+    const locale = new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumSignificantDigits: 3,
+    });
+    return locale.format(data);
+  };
+
+  // GET IMAGE URL
+  const getImageUrl = (image) => {
+    return `${API_URL}/products/${image}`;
+  };
+
+  // GET PRODUCTS
+  const getProducts = async (page) => {
+    try {
+      const response = await axios.post(`${API_URL}/products/getProducts`, {
+        name: onSearchText,
+        category_id: categoryId,
+        sortBy,
+        page,
+        perPage: itemPerPage,
+      });
+
+      setProducts(response.data.products);
+      setProductCount(response.data.count);
+      // console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // GET CATEGORIES
+  const getCategories = async () => {
+    try {
+      let tempCategories = [];
+      const response = await axios.get(`${API_URL}/products/getCategories`);
+      await response.data.forEach((category) => {
+        tempCategories.push({ value: category.id, label: category.category });
+      });
+      setCategories(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getCategories();
+    getProducts(1);
+    setCurrentPage(1);
+  }, [onSearchText, categoryId, sortBy]);
 
   // Changing state value when searching name
   useEffect(() => {
-    if (filter !== "") {
-      const filteredObject = productCardData.filter((item) => {
-        return item.name.toLowerCase().includes(filter.toLowerCase());
+    if (onSearchText !== "") {
+      const filteredObject = productData.filter((item) => {
+        return item.name.toLowerCase().includes(onSearchText.toLowerCase());
       });
       setData([...filteredObject]);
     } else {
-      setData([...productCardData]);
+      setData([...productData]);
     }
-  }, [filter, setData]);
+  }, [onSearchText]);
 
   const toggle = () => {
     setView(!view);
   };
 
-  const onFormSubmit = (form) => {
-    const { name, title, prevPrice, newPrice, type } = form;
-    let submittedData = {
-      id: data.length,
-      name: name,
-      title: title,
-      img: files.length > 0 ? files[0].preview : ProductH,
-      prevPrice: prevPrice,
-      newPrice: newPrice,
-      type: type,
-      new: true,
-      hot: false,
-      like: false,
-      cart: false,
-      slider: [
-        { id: 0, img: files.length > 0 ? files[0].preview : ProductH },
-        { id: 1, img: ProductLGB },
-        { id: 2, img: ProductLGC },
-        { id: 3, img: ProductLGD },
-        { id: 4, img: ProductLGE },
-        { id: 5, img: ProductLGF },
-      ],
-    };
-    setData([submittedData, ...data]);
-    setView(false);
-    setFiles([]);
-  };
-
   // filter text
   const onFilterChange = (e) => {
-    setFilter(e.target.value);
+    setSearchText(e.target.value);
   };
 
   // handles ondrop function of dropzone
@@ -114,12 +146,17 @@ const ProductCard = () => {
   // Get current list, pagination
   const indexOfLastItem = currentPage * itemPerPage;
   const indexOfFirstItem = indexOfLastItem - itemPerPage;
-  const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = products.slice(indexOfFirstItem, indexOfLastItem);
+
+  // console.log("productCount:", productCount);
 
   // Change Page
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    getProducts(pageNumber);
+  };
 
-  const { errors, register, handleSubmit } = useForm();
+  const { errors, register, handleSubmit, reset } = useForm();
 
   return (
     <React.Fragment>
@@ -153,49 +190,50 @@ const ProductCard = () => {
                           type="text"
                           className="form-control"
                           id="default-04"
-                          onChange={onFilterChange}
-                          placeholder="Quick search by name"
+                          onChange={(e) => onFilterChange(e)}
+                          placeholder="Quick search"
                         />
                       </div>
                     </li>
                     <li>
-                      <UncontrolledDropdown>
-                        <DropdownToggle
-                          color="transparent"
-                          className="dropdown-toggle dropdown-indicator btn btn-outline-light btn-white"
-                        >
-                          Status
-                        </DropdownToggle>
-                        <DropdownMenu right>
-                          <ul className="link-list-opt no-bdr">
-                            <li>
-                              <DropdownItem tag="a" href="#dropdownitem" onClick={(ev) => ev.preventDefault()}>
-                                <span>New Items</span>
-                              </DropdownItem>
-                            </li>
-                            <li>
-                              <DropdownItem tag="a" href="#dropdownitem" onClick={(ev) => ev.preventDefault()}>
-                                <span>Featured</span>
-                              </DropdownItem>
-                            </li>
-                            <li>
-                              <DropdownItem tag="a" href="#dropdownitem" onClick={(ev) => ev.preventDefault()}>
-                                <span>Out of Stock</span>
-                              </DropdownItem>
-                            </li>
-                          </ul>
-                        </DropdownMenu>
-                      </UncontrolledDropdown>
+                      <select
+                        onChange={(e) => setCategoryId(+e.target.value)}
+                        className="form-control pr-2"
+                        name="category_id"
+                        defaultValue={formData.category_id}
+                        ref={register({ required: "This is required" })}
+                      >
+                        <option value={null}>All Category</option>
+                        {categories.map((category) => {
+                          return (
+                            <option key={category.id} value={category.id}>
+                              {category.category}
+                            </option>
+                          );
+                        })}
+                      </select>
                     </li>
-                    {/* <li className="nk-block-tools-opt">
-                      <Button className="toggle btn-icon d-md-none" color="primary" onClick={toggle}>
-                        <Icon name="plus"></Icon>
-                      </Button>
-                      <Button className="toggle d-none d-md-inline-flex" color="primary" onClick={toggle}>
-                        <Icon name="plus"></Icon>
-                        <span>Add Product</span>
-                      </Button>
-                    </li> */}
+
+                    <li>
+                      <select
+                        onChange={(e) => {
+                          e.target.value.includes("name")
+                            ? e.target.value.includes("asc")
+                              ? setSortBy({ name: true, asc: true })
+                              : setSortBy({ name: true, asc: false })
+                            : e.target.value.includes("asc")
+                            ? setSortBy({ name: false, asc: true })
+                            : setSortBy({ name: false, asc: false });
+                        }}
+                        className="form-control"
+                        name="sort"
+                      >
+                        <option value="nameasc">A - Z</option>
+                        <option value="namedesc">Z - A</option>
+                        <option value="priceasc">Lowest Price</option>
+                        <option value="pricedesc">Highest Price</option>
+                      </select>
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -204,17 +242,22 @@ const ProductCard = () => {
         </BlockHead>
         <Block>
           <Row className="g-gs">
-            {currentItems.length > 0 ? (
-              currentItems.map((item) => {
+            {products.length > 0 ? (
+              products.map((item) => {
                 return (
                   <Col xxl={3} lg={4} sm={6} key={item.id}>
                     <Card className="product-card">
                       <div className="product-thumb">
                         <Link to={`${process.env.PUBLIC_URL}/product-details/${item.id}`}>
-                          <img className="card-img-top" src={item.img} alt="" />
+                          <img
+                            className="card-img-top"
+                            style={{ maxHeight: "500px" }}
+                            src={getImageUrl(item.image)}
+                            alt=""
+                          />
                         </Link>
                         <ul className="product-badges">
-                          {item.new && (
+                          {/* {item.new && (
                             <li>
                               <Badge color="success">New</Badge>
                             </li>
@@ -223,7 +266,7 @@ const ProductCard = () => {
                             <li>
                               <Badge color="danger">New</Badge>
                             </li>
-                          )}
+                          )} */}
                         </ul>
                         <ul className="product-actions">
                           <li>
@@ -248,7 +291,8 @@ const ProductCard = () => {
                           <Link to={`${process.env.PUBLIC_URL}/product-details/${item.id}`}>{item.title}</Link>
                         </h5>
                         <div className="product-price text-primary h5">
-                          <small className="text-muted del fs-13px">${item.prevPrice}</small> ${item.newPrice}
+                          {/* <small className="text-muted del fs-13px">IDR{item.prevPrice}</small> */}{" "}
+                          {toCurrency(item.price)}
                         </div>
                       </div>
                     </Card>
@@ -259,150 +303,17 @@ const ProductCard = () => {
               <div className="ml-2">No product found</div>
             )}
           </Row>
-          {currentItems.length > 0 && (
+          {products.length > 0 && (
             <div className="mt-3">
               <PaginationComponent
                 itemPerPage={itemPerPage}
-                totalItems={data.length}
+                totalItems={productCount}
                 paginate={paginate}
                 currentPage={currentPage}
               />
             </div>
           )}
         </Block>
-
-        <SimpleBar
-          className={`nk-add-product toggle-slide toggle-slide-right toggle-screen-any ${view ? "content-active" : ""}`}
-        >
-          <BlockHead>
-            <BlockHeadContent>
-              <BlockTitle tag="h5">Add Product</BlockTitle>
-              <BlockDes>
-                <p>Add new information for a product.</p>
-              </BlockDes>
-            </BlockHeadContent>
-          </BlockHead>
-          <Block>
-            <form onSubmit={handleSubmit(onFormSubmit)}>
-              <Row className="g-3">
-                <Col size="12">
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="product-title">
-                      Product Name
-                    </label>
-                    <div className="form-control-wrap">
-                      <input
-                        type="text"
-                        name="name"
-                        className="form-control"
-                        defaultValue={formData.name}
-                        ref={register({ required: "This field is required" })}
-                      />
-                      {errors.name && <span className="invalid">{errors.name.message}</span>}
-                    </div>
-                  </div>
-                </Col>
-                <Col md="6">
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="regular-price">
-                      Product Title
-                    </label>
-                    <div className="form-control-wrap">
-                      <input
-                        type="text"
-                        name="title"
-                        defaultValue={formData.title}
-                        ref={register({ required: "This field is required" })}
-                        className="form-control"
-                      />
-                      {errors.title && <span className="invalid">{errors.title.message}</span>}
-                    </div>
-                  </div>
-                </Col>
-                <Col md="6">
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="sale-price">
-                      Previous Value
-                    </label>
-                    <div className="form-control-wrap">
-                      <input
-                        type="number"
-                        name="prevPrice"
-                        defaultValue={formData.prevPrice}
-                        ref={register({ required: "This field is required" })}
-                        className="form-control"
-                      />
-                      {errors.prevPrice && <span className="invalid">{errors.prevPrice.message}</span>}
-                    </div>
-                  </div>
-                </Col>
-                <Col md="6">
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="stock">
-                      New Price
-                    </label>
-                    <div className="form-control-wrap">
-                      <input
-                        type="number"
-                        name="newPrice"
-                        defaultValue={formData.newPrice}
-                        ref={register({ required: "This field is required" })}
-                        className="form-control"
-                      />
-                      {errors.newPrice && <span className="invalid">{errors.newPrice.message}</span>}
-                    </div>
-                  </div>
-                </Col>
-                <Col md="6">
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="SKU">
-                      Type
-                    </label>
-                    <div className="form-control-wrap">
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="type"
-                        defaultValue={formData.type}
-                        ref={register({ required: "This field is required" })}
-                      />
-                      {errors.type && <span className="invalid">{errors.type.message}</span>}
-                    </div>
-                  </div>
-                </Col>
-                <Col size="12">
-                  <Dropzone onDrop={(acceptedFiles) => handleDropChange(acceptedFiles)}>
-                    {({ getRootProps, getInputProps }) => (
-                      <section>
-                        <div {...getRootProps()} className="dropzone upload-zone small bg-lighter my-2 dz-clickable">
-                          <input {...getInputProps()} />
-                          {files.length === 0 && <p>Drag 'n' drop some files here, or click to select files</p>}
-                          {files.map((file) => (
-                            <div
-                              key={file.name}
-                              className="dz-preview dz-processing dz-image-preview dz-error dz-complete"
-                            >
-                              <div className="dz-image">
-                                <img src={file.preview} alt="preview" />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </section>
-                    )}
-                  </Dropzone>
-                </Col>
-                <Col size="12">
-                  <Button color="primary">
-                    <Icon className="plus"></Icon>
-                    <span>Add Product</span>
-                  </Button>
-                </Col>
-              </Row>
-            </form>
-          </Block>
-        </SimpleBar>
-        {view && <div className="toggle-overlay" onClick={toggle}></div>}
       </Content>
     </React.Fragment>
   );
