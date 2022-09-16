@@ -28,7 +28,7 @@ const VerifiedAdm = () => {
         }
       );
 
-      if (response.data === "success") {
+      if (response.data) {
         setIsverified(true);
         setMsg("Your Account is Verified!");
       } else {

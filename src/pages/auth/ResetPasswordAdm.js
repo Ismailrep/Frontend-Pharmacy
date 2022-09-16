@@ -27,7 +27,7 @@ const ResetPasswordAdm = ({ history }) => {
   // CHECK TOKEN EXPIRED
   const authToken = async () => {
     try {
-      await axios.post(
+      const response = await axios.post(
         `${API_URL}/admin/auth-reset-token`,
         {},
         {
@@ -36,11 +36,12 @@ const ResetPasswordAdm = ({ history }) => {
           },
         }
       );
+      console.log(response.data);
+      if (!response.data) {
+        return setTokenIsValid(false);
+      }
       setTokenIsValid(true);
     } catch (error) {
-      if (error.response.data === "User not authenticated!") {
-        setTokenIsValid(false);
-      }
       console.log(error);
     }
   };
@@ -51,10 +52,6 @@ const ResetPasswordAdm = ({ history }) => {
       await axios.patch(`${API_URL}/admin/reset-password`, { password, token });
       history.push(`${process.env.PUBLIC_URL}/reset-password-success`);
     } catch (error) {
-      // if (error.response.data.msg) {
-      //   setMsg(error.response.data.msg);
-      //   setIsLoading(false);
-      // }
       console.log(error);
       setIsLoading(false);
     }

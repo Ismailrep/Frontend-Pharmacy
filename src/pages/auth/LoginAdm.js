@@ -77,7 +77,7 @@ const Login = () => {
                     placeholder="Enter your email address"
                     className="form-control-lg form-control"
                   />
-                  {admin.errMsg.includes("mail") && <span className="invalid">{admin.errMsg}</span>}
+                  {admin.errMsg.includes("Account") && <span className="invalid">{admin.errMsg}</span>}
                 </div>
               </FormGroup>
               <FormGroup>

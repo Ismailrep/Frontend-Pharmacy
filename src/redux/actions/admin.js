@@ -12,19 +12,16 @@ export const loginAdmin = (data) => {
       const response = await Axios.post(`${API_URL}/admin/login`, data);
 
       if (typeof response.data === "string") {
-        dispatch({
+        return dispatch({
           type: "ADMIN_ERROR",
           payload: response.data,
         });
-      } else {
-        delete response.data.adminData.password;
-        localStorage.setItem("adminAccess", response.data.token);
-
-        dispatch({
-          type: "ADMIN_LOGIN",
-          payload: response.data.adminData,
-        });
       }
+      localStorage.setItem("adminAccess", response.data.token);
+      dispatch({
+        type: "ADMIN_LOGIN",
+        payload: response.data.adminData,
+      });
     };
   } catch (error) {
     console.log(error);
@@ -52,6 +49,13 @@ export const adminKeepLogin = (token) => {
       const response = await Axios.post(`${API_URL}/admin/keepLogin`, {
         token,
       });
+
+      if (!response.data) {
+        localStorage.removeItem("adminAccess");
+        return dispatch({
+          type: "ADMIN_LOGOUT",
+        });
+      }
 
       delete response.data.adminData.password;
       localStorage.setItem("adminAccess", response.data.token);

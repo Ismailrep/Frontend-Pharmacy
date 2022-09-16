@@ -68,17 +68,17 @@ const CustomerList = () => {
   const emailPattern = /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/i;
 
   // INPUT VALIDATION WITH REGULAR EXPRESSION
-  const validName = namePattern.test(formData.name);
+  const validName = namePattern.test(formData.first_name);
   const validMail = emailPattern.test(formData.email);
 
   // HANDLE INVALID NAME
   useEffect(() => {
-    if (!validName && formData.name) {
+    if (!validName && formData.first_name) {
       setErrMsg({ name: "Min. 3 character." });
     } else {
       setErrMsg({ name: "" });
     }
-  }, [validName, formData.name]);
+  }, [validName, formData.first_name]);
 
   // HANDLE INVALID EMAIL
   useEffect(() => {
@@ -90,7 +90,7 @@ const CustomerList = () => {
   }, [validMail, formData.email]);
 
   useEffect(() => {
-    if (!formData.name || errMsg.name || !formData.email || errMsg.email) {
+    if (!formData.first_name || errMsg.name || !formData.email || errMsg.email) {
       setComplete(false);
     } else {
       setComplete(true);
@@ -133,7 +133,7 @@ const CustomerList = () => {
   // function to reset the form
   const resetForm = () => {
     setFormData({
-      name: "",
+      first_name: "",
       email: "",
     });
   };
@@ -555,8 +555,8 @@ const CustomerList = () => {
                       <input
                         className="form-control"
                         type="text"
-                        name="name"
-                        value={formData.name}
+                        name="first_name"
+                        value={formData.first_name}
                         placeholder="Enter name"
                         onChange={inputHandler}
                       />

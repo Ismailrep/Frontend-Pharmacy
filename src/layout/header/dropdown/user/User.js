@@ -74,9 +74,11 @@ const User = () => {
               <LinkItem link="/user-profile-setting" icon="setting-alt" onClick={toggle}>
                 Account Setting
               </LinkItem>
-              {/* <LinkItem link="/user-profile-activity" icon="activity-alt" onClick={toggle}>
-                Login Activity
-              </LinkItem> */}
+              {admin.id ? (
+                <LinkItem link="/admin" icon="dashboard" onClick={toggle}>
+                  Admin Dashboard
+                </LinkItem>
+              ) : null}
             </LinkList>
           </div>
           <div className="dropdown-inner">
