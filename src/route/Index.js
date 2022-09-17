@@ -143,7 +143,7 @@ const Pages = () => {
             </AdminProvider>
           )}
         ></Route>
-        <Route
+        {/* <Route
           exact
           path={`/admin/customer`}
           render={() => (
@@ -151,7 +151,7 @@ const Pages = () => {
               <EcomCustomer />
             </CustomerProvider>
           )}
-        ></Route>
+        ></Route> */}
         <Route
           exact
           path={`/admin/customer-details/:id`}
@@ -169,7 +169,7 @@ const Pages = () => {
 
         <Route //Context Api added
           exact
-          path={`/admin/user-list-regular`}
+          path={`/admin/customer`}
           render={() => (
             <UserContextProvider>
               <UserListRegularPage />

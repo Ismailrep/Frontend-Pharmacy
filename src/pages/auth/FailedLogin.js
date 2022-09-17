@@ -6,9 +6,11 @@ import PageContainer from "../../layout/page-container/PageContainer";
 import Head from "../../layout/head/Head";
 import AuthFooter from "./AuthFooter";
 import { Link } from "react-router-dom";
+import { Button } from "../../components/Component";
 
 const FailedLogin = () => {
   const user = JSON.parse(window.localStorage.getItem("profile"));
+  const delUser = localStorage.removeItem("profile");
   return (
     <React.Fragment>
       <Head title="Failed" />
@@ -32,6 +34,11 @@ const FailedLogin = () => {
                     : ""}
                 </p>
               </BlockDes>
+              <Link onClick={delUser} to={`${process.env.PUBLIC_URL}/`}>
+                <Button color="primary" size="lg" className="mt-2">
+                  Back To Home
+                </Button>
+              </Link>
             </BlockContent>
           </BlockHead>
         </Block>

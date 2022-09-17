@@ -18,7 +18,7 @@ import {
 } from "../../../components/Component";
 import { Badge, Card } from "reactstrap";
 import { ProductContext } from "./ProductContext";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { SlickArrowLeft, SlickArrowRight } from "../../../components/partials/slick/SlickComponents";
 import { productData, unitOptions } from "../../panel/e-commerce/product/ProductData";
 import axios from "axios";
@@ -71,8 +71,9 @@ const ProductDetails = ({ match }) => {
   const [nav1, setNav1] = useState(null);
   const [nav2, setNav2] = useState(null);
   const [categoryId, setCategoryId] = useState(null);
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState("");
+  const [categories, setCategories] = useState("");
+  const { id } = useParams();
 
   // CONVERT PRICE TO CURRENCY TYPE
   const toCurrency = (data) => {
@@ -90,19 +91,11 @@ const ProductDetails = ({ match }) => {
   };
 
   // GET PRODUCTS
-  const getProducts = async (id) => {
+  const getProductsById = async (id) => {
     try {
-      const response = await axios.post(`${API_URL}/products/getProducts`, {
-        // name: onSearchText,
-        // category_id: categoryId,
-        // sortBy,
-        // page,
-        // perPage: itemPerPage,
-      });
+      const response = await axios.get(`${API_URL}/products/getProductsById/${id}`);
 
-      setProducts(response.data.products);
-      setProductCount(response.data.count);
-      // console.log(response.data);
+      setProducts(response.data);
     } catch (error) {
       console.log(error);
     }
@@ -110,23 +103,19 @@ const ProductDetails = ({ match }) => {
 
   // GET CATEGORIES
   const getCategories = async () => {
-    try {
-      let tempCategories = [];
-      const response = await axios.get(`${API_URL}/products/getCategories`);
-      await response.data.forEach((category) => {
-        tempCategories.push({ value: category.id, label: category.category });
-      });
-      setCategories(response.data);
-    } catch (error) {
-      console.log(error);
-    }
+    const response = await axios.get(`${API_URL}/products/getCategories`);
+    // await response.data.forEach((category) => {
+    //   tempCategories.push({ value: category.id, label: category.category });
+    // });
+    setCategories(response.data);
   };
 
   useEffect(() => {
+    getProductsById(id);
     getCategories();
-    getProducts(3);
-    // setCurrentPage(1);
   }, [categoryId]);
+
+  // console.log(products.category_id);
 
   // increases quantity number
   const increaseCounter = () => {
@@ -212,8 +201,13 @@ const ProductDetails = ({ match }) => {
                         className="slider-init"
                         prevArrow
                       >
-                        <div className="slider-item rounded" key={currentSlide.id}>
-                          <img src={currentSlide.img} className="w-100" alt="" />
+                        <div className="slider-item rounded">
+                          <img
+                            style={{ maxHeight: "30%" }}
+                            src={getImageUrl(products.image)}
+                            className="w-100"
+                            alt=""
+                          />
                         </div>
                       </Slider>
                       {/* <Slider
@@ -240,13 +234,8 @@ const ProductDetails = ({ match }) => {
                   </Col>
                   <Col lg={6}>
                     <div className="product-info mt-5 mr-xxl-5">
-                      <h4 className="product-price text-primary">
-                        ${sliderData.newPrice}{" "}
-                        <small className="text-muted fs-14px">
-                          ${sliderData.prevPrice === null ? "0.00" : sliderData.prevPrice}
-                        </small>
-                      </h4>
-                      <h2 className="product-title">{sliderData.title}</h2>
+                      <h4 className="product-price text-primary">{toCurrency(products.price)} </h4>
+                      <h2 className="product-title">{products.name}</h2>
                       <div className="product-rating">
                         <ul className="rating">
                           <li>
@@ -268,20 +257,21 @@ const ProductDetails = ({ match }) => {
                         <div className="amount">(2 Reviews)</div>
                       </div>
                       <div className="product-excrept text-soft">
-                        <p className="lead">
-                          I must explain to you how all this mistaken idea of denoun cing ple praising pain was born and
-                          I will give you a complete account of the system, and expound the actual teaching.
-                        </p>
+                        <p className="lead">{products.description}</p>
                       </div>
                       <div className="product-meta">
                         <ul className="d-flex g-3 gx-5">
                           <li>
                             <div className="fs-14px text-muted">Category</div>
-                            <div className="fs-16px fw-bold text-secondary">{sliderData.type}</div>
+                            <div className="fs-16px fw-bold text-secondary">
+                              {/* {categories[products.category_id].category} */}
+                            </div>
                           </li>
                           <li>
                             <div className="fs-14px text-muted">Stocks</div>
-                            <div className="fs-16px fw-bold text-secondary">Forerunner 290XT</div>
+                            <div className="fs-16px fw-bold text-secondary">
+                              {products.total_stock} {products.unit}
+                            </div>
                           </li>
                         </ul>
                       </div>
