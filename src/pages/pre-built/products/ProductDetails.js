@@ -1,12 +1,8 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import ProductVideo from "../../../images/product/video-a.jpg";
-import ModalVideo from "react-modal-video";
 import Content from "../../../layout/content/Content";
 import Head from "../../../layout/head/Head";
-import Slider from "react-slick";
 import {
   BlockBetween,
-  BlockDes,
   BlockHead,
   BlockHeadContent,
   BlockTitle,
@@ -17,61 +13,13 @@ import {
   Block,
 } from "../../../components/Component";
 import { Badge, Card } from "reactstrap";
-import { ProductContext } from "./ProductContext";
 import { Link, useParams } from "react-router-dom";
-import { SlickArrowLeft, SlickArrowRight } from "../../../components/partials/slick/SlickComponents";
-import { productData, unitOptions } from "../../panel/e-commerce/product/ProductData";
 import axios from "axios";
 import { API_URL } from "../../../constants/API";
 
-const sliderSettings = {
-  className: "slider-init row",
-  slidesToShow: 2,
-  centerMode: false,
-  slidesToScroll: 1,
-  infinite: false,
-  prevArrow: <SlickArrowLeft />,
-  nextArrow: <SlickArrowRight />,
-  responsive: [
-    { breakpoint: 3000, settings: { slidesToShow: 4 } },
-    { breakpoint: 1540, settings: { slidesToShow: 3 } },
-    { breakpoint: 992, settings: { slidesToShow: 2 } },
-    { breakpoint: 576, settings: { slidesToShow: 1 } },
-  ],
-};
-
-const sliderSettingsDefault = {
-  slidesToShow: 3,
-  slidesToScroll: 1,
-  centerMode: true,
-  slide: null,
-  responsive: [
-    { breakpoint: 1539, settings: { slidesToShow: 3 } },
-    { breakpoint: 768, settings: { slidesToShow: 2 } },
-    { breakpoint: 420, settings: { slidesToShow: 1 } },
-  ],
-  arrows: false,
-  swipeToSlide: true,
-  focusOnSelect: true,
-  className: "slider-init slider-nav",
-};
-
-const ProductDetails = ({ match }) => {
-  const { contextData } = useContext(ProductContext);
-
-  const [data] = contextData;
-  const [productsData, setProductsData] = useState(productData);
-
-  const [sliderData, setSliderData] = useState([]);
-  const [currentSlide, setCurrentSlide] = useState({});
-  const [colorSector, setColorSelector] = useState(1);
-  const [sizeSelector, setSizeSelector] = useState(1);
+const ProductDetails = () => {
   const [counter, setCounter] = useState(1);
-  const [videoOpen, setVideoOpen] = useState(false);
-  const [nav1, setNav1] = useState(null);
-  const [nav2, setNav2] = useState(null);
-  const [categoryId, setCategoryId] = useState(null);
-  const [products, setProducts] = useState("");
+  const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState("");
   const { id } = useParams();
 
@@ -87,6 +35,7 @@ const ProductDetails = ({ match }) => {
 
   // GET IMAGE URL
   const getImageUrl = (image) => {
+    console.log(image);
     return `${API_URL}/products/${image}`;
   };
 
@@ -96,6 +45,7 @@ const ProductDetails = ({ match }) => {
       const response = await axios.get(`${API_URL}/products/getProductsById/${id}`);
 
       setProducts(response.data);
+      console.log(response.data);
     } catch (error) {
       console.log(error);
     }
@@ -104,18 +54,13 @@ const ProductDetails = ({ match }) => {
   // GET CATEGORIES
   const getCategories = async () => {
     const response = await axios.get(`${API_URL}/products/getCategories`);
-    // await response.data.forEach((category) => {
-    //   tempCategories.push({ value: category.id, label: category.category });
-    // });
     setCategories(response.data);
   };
 
   useEffect(() => {
     getProductsById(id);
     getCategories();
-  }, [categoryId]);
-
-  // console.log(products.category_id);
+  }, []);
 
   // increases quantity number
   const increaseCounter = () => {
@@ -129,403 +74,136 @@ const ProductDetails = ({ match }) => {
     }
   };
 
-  // changes slides
-  const slideChange = (index) => {
-    var product = sliderData.slider.find((item) => item.id === index);
-    setCurrentSlide(product);
-  };
-
-  const slider1 = useRef(null);
-  const slider2 = useRef(null);
-
-  useEffect(() => {
-    setNav1(slider1.current);
-    setNav2(slider2.current);
-  }, []);
-
-  // grabs the id of the url and loads the corresponding data
-  useEffect(() => {
-    const id = match.params.id;
-    if (id !== undefined || null || "") {
-      let product = data.find((item) => item.id === Number(id));
-      if (product) {
-        setSliderData(product);
-        setCurrentSlide(product.slider[0]);
-      }
-    } else {
-      setSliderData(data[0]);
-      setCurrentSlide(data[0].slider[0]);
-    }
-  }, [match.params.id]); // eslint-disable-line react-hooks/exhaustive-deps
-
   return (
     <React.Fragment>
       <Head title="Product Detail"></Head>
-      {sliderData && sliderData.slider && (
-        <Content>
-          <BlockHead size="sm">
-            <BlockBetween className="g-3">
-              <BlockHeadContent>
-                <BlockTitle>Product Details</BlockTitle>
-              </BlockHeadContent>
-              <BlockHeadContent>
-                <Link to={`/`}>
-                  <Button color="light" outline className="bg-white d-none d-sm-inline-flex">
-                    <Icon name="arrow-left"></Icon>
-                    <span>Back</span>
-                  </Button>
-                </Link>
-                <Link to={`/`}>
-                  <Button color="light" outline className="btn-icon bg-white d-inline-flex d-sm-none">
-                    <Icon name="arrow-left"></Icon>
-                  </Button>
-                </Link>
-              </BlockHeadContent>
-            </BlockBetween>
-          </BlockHead>
+      <Content>
+        <BlockHead size="sm">
+          <BlockBetween className="g-3">
+            <BlockHeadContent>
+              <BlockTitle>Product Details</BlockTitle>
+            </BlockHeadContent>
+            <BlockHeadContent>
+              <Link to={`/`}>
+                <Button color="light" outline className="bg-white d-none d-sm-inline-flex">
+                  <Icon name="arrow-left"></Icon>
+                  <span>Back</span>
+                </Button>
+              </Link>
+              <Link to={`/`}>
+                <Button color="light" outline className="btn-icon bg-white d-inline-flex d-sm-none">
+                  <Icon name="arrow-left"></Icon>
+                </Button>
+              </Link>
+            </BlockHeadContent>
+          </BlockBetween>
+        </BlockHead>
 
-          <Block>
-            <Card>
-              <div className="card-inner">
-                <Row>
-                  <Col lg={6}>
-                    <div className="product-gallery mr-xl-1 mr-xxl-5">
-                      <Slider
-                        asNavFor={nav2}
-                        ref={slider1}
-                        arrows={false}
-                        fade={true}
-                        slidesToShow={1}
-                        slidesToScroll={1}
-                        initialSlide={currentSlide.id}
-                        className="slider-init"
-                        prevArrow
-                      >
-                        <div className="slider-item rounded">
-                          <img
-                            style={{ maxHeight: "30%" }}
-                            src={getImageUrl(products.image)}
-                            className="w-100"
-                            alt=""
-                          />
-                        </div>
-                      </Slider>
-                      {/* <Slider
-                        asNavFor={nav1}
-                        ref={slider2}
-                        afterChange={(newIndex) => slideChange(newIndex)}
-                        initialSlide={currentSlide.id}
-                        {...sliderSettingsDefault}
-                      >
-                        {sliderData.slider.map((item) => {
-                          return (
-                            <div
-                              className={`slider-item ${currentSlide.id === item.id ? "slick-current" : ""}`}
-                              key={item.id}
+        <Block>
+          <Card>
+            <div className="card-inner">
+              <Row>
+                <Col lg={6}>
+                  <div className="product-gallery mr-xl-1 mr-xxl-5" style={{ borderRadius: "20px" }}>
+                    <div className="slider-item rounded">
+                      <img
+                        style={{ maxHeight: "30%", borderRadius: "20px" }}
+                        src={getImageUrl(products.image)}
+                        className="w-100"
+                        alt=""
+                      />
+                    </div>
+                  </div>
+                </Col>
+                <Col lg={6}>
+                  <div className="product-info mt-5 mr-xxl-5">
+                    <h4 className="product-price text-primary">{toCurrency(products.price)} </h4>
+                    <h2 className="product-title">{products.name}</h2>
+                    <div className="product-rating">
+                      <ul className="rating">
+                        <li>
+                          <Icon name="star-fill"></Icon>
+                        </li>
+                        <li>
+                          <Icon name="star-fill"></Icon>
+                        </li>
+                        <li>
+                          <Icon name="star-fill"></Icon>
+                        </li>
+                        <li>
+                          <Icon name="star-fill"></Icon>
+                        </li>
+                        <li>
+                          <Icon name="star-half"></Icon>
+                        </li>
+                      </ul>
+                      <div className="amount">(2 Reviews)</div>
+                    </div>
+                    <div className="product-excrept text-soft">
+                      <p className="lead">{products.description}</p>
+                    </div>
+                    <div className="product-meta">
+                      <ul className="d-flex g-3 gx-5">
+                        <li>
+                          <div className="fs-14px text-muted">Category</div>
+                          <div className="fs-16px fw-bold text-secondary">
+                            {products.category && products.category.category ? products.category.category : null}
+                          </div>
+                        </li>
+                        <li>
+                          <div className="fs-14px text-muted">Stocks</div>
+                          <div className="fs-16px fw-bold text-secondary">
+                            {products.total_stock} {products.unit}
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="product-meta">
+                      <ul className="d-flex flex-wrap ailgn-center g-2 pt-1">
+                        <li className="w-140px">
+                          <div className="form-control-wrap number-spinner-wrap">
+                            <Button
+                              color="light"
+                              outline
+                              className="btn-icon number-spinner-btn number-minus"
+                              onClick={() => decreaseCounter()}
                             >
-                              <div className="thumb">
-                                <img src={item.img} alt="" />
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </Slider> */}
-                    </div>
-                  </Col>
-                  <Col lg={6}>
-                    <div className="product-info mt-5 mr-xxl-5">
-                      <h4 className="product-price text-primary">{toCurrency(products.price)} </h4>
-                      <h2 className="product-title">{products.name}</h2>
-                      <div className="product-rating">
-                        <ul className="rating">
-                          <li>
-                            <Icon name="star-fill"></Icon>
-                          </li>
-                          <li>
-                            <Icon name="star-fill"></Icon>
-                          </li>
-                          <li>
-                            <Icon name="star-fill"></Icon>
-                          </li>
-                          <li>
-                            <Icon name="star-fill"></Icon>
-                          </li>
-                          <li>
-                            <Icon name="star-half"></Icon>
-                          </li>
-                        </ul>
-                        <div className="amount">(2 Reviews)</div>
-                      </div>
-                      <div className="product-excrept text-soft">
-                        <p className="lead">{products.description}</p>
-                      </div>
-                      <div className="product-meta">
-                        <ul className="d-flex g-3 gx-5">
-                          <li>
-                            <div className="fs-14px text-muted">Category</div>
-                            <div className="fs-16px fw-bold text-secondary">
-                              {/* {categories[products.category_id].category} */}
-                            </div>
-                          </li>
-                          <li>
-                            <div className="fs-14px text-muted">Stocks</div>
-                            <div className="fs-16px fw-bold text-secondary">
-                              {products.total_stock} {products.unit}
-                            </div>
-                          </li>
-                        </ul>
-                      </div>
-                      {/* <div className="product-meta">
-                        <h6 className="title">Color</h6>
-                        <ul className="custom-control-group">
-                          <li>
-                            <div className="custom-control color-control">
-                              <input
-                                type="radio"
-                                className="custom-control-input"
-                                id="productColor1"
-                                name="productColor"
-                                onChange={() => setColorSelector(1)}
-                                checked={colorSector === 1 ? true : false}
-                              />
-                              <label
-                                className="custom-control-label dot dot-xl"
-                                style={{ background: "#754c24" }}
-                                htmlFor="productColor1"
-                              ></label>
-                            </div>
-                          </li>
-                          <li>
-                            <div className="custom-control color-control">
-                              <input
-                                type="radio"
-                                className="custom-control-input"
-                                id="productColor2"
-                                name="productColor"
-                                onChange={() => setColorSelector(2)}
-                                checked={colorSector === 2 ? true : false}
-                              />
-                              <label
-                                className="custom-control-label dot dot-xl"
-                                style={{ background: "#636363" }}
-                                htmlFor="productColor2"
-                              ></label>
-                            </div>
-                          </li>
-                          <li>
-                            <div className="custom-control color-control">
-                              <input
-                                type="radio"
-                                className="custom-control-input"
-                                id="productColor3"
-                                name="productColor"
-                                onChange={() => setColorSelector(3)}
-                                checked={colorSector === 3 ? true : false}
-                              />
-                              <label
-                                className="custom-control-label dot dot-xl"
-                                style={{ background: "#ba6ed4" }}
-                                htmlFor="productColor3"
-                              ></label>
-                            </div>
-                          </li>
-                          <li>
-                            <div className="custom-control color-control">
-                              <input
-                                type="radio"
-                                className="custom-control-input"
-                                id="productColor4"
-                                name="productColor"
-                                onChange={() => setColorSelector(4)}
-                                checked={colorSector === 4 ? true : false}
-                              />
-                              <label
-                                className="custom-control-label dot dot-xl"
-                                style={{ background: "#ff87a3" }}
-                                htmlFor="productColor4"
-                              ></label>
-                            </div>
-                          </li>
-                        </ul>
-                      </div> */}
-
-                      {/* <div className="product-meta">
-                        <h6 className="title">Size</h6>
-                        <ul className="custom-control-group">
-                          <li>
-                            <div className="custom-control custom-radio custom-control-pro no-control">
-                              <input
-                                type="radio"
-                                className="custom-control-input"
-                                name="sizeCheck"
-                                id="sizeCheck1"
-                                onChange={() => setSizeSelector(1)}
-                                checked={sizeSelector === 1 ? true : false}
-                              />
-                              <label className="custom-control-label" htmlFor="sizeCheck1">
-                                XS
-                              </label>
-                            </div>
-                          </li>
-                          <li>
-                            <div className="custom-control custom-radio custom-control-pro no-control">
-                              <input
-                                type="radio"
-                                className="custom-control-input"
-                                name="sizeCheck"
-                                id="sizeCheck2"
-                                onChange={() => setSizeSelector(2)}
-                                checked={sizeSelector === 2 ? true : false}
-                              />
-                              <label className="custom-control-label" htmlFor="sizeCheck2">
-                                SM
-                              </label>
-                            </div>
-                          </li>
-                          <li>
-                            <div className="custom-control custom-radio custom-control-pro no-control">
-                              <input
-                                type="radio"
-                                className="custom-control-input"
-                                name="sizeCheck"
-                                id="sizeCheck3"
-                                onChange={() => setSizeSelector(3)}
-                                checked={sizeSelector === 3 ? true : false}
-                              />
-                              <label className="custom-control-label" htmlFor="sizeCheck3">
-                                L
-                              </label>
-                            </div>
-                          </li>
-                          <li>
-                            <div className="custom-control custom-radio custom-control-pro no-control">
-                              <input
-                                type="radio"
-                                className="custom-control-input"
-                                name="sizeCheck"
-                                id="sizeCheck4"
-                                onChange={() => setSizeSelector(4)}
-                                checked={sizeSelector === 4 ? true : false}
-                              />
-                              <label className="custom-control-label" htmlFor="sizeCheck4">
-                                XL
-                              </label>
-                            </div>
-                          </li>
-                        </ul>
-                      </div> */}
-
-                      <div className="product-meta">
-                        <ul className="d-flex flex-wrap ailgn-center g-2 pt-1">
-                          <li className="w-140px">
-                            <div className="form-control-wrap number-spinner-wrap">
-                              <Button
-                                color="light"
-                                outline
-                                className="btn-icon number-spinner-btn number-minus"
-                                onClick={() => decreaseCounter()}
-                              >
-                                <Icon name="minus"></Icon>
-                              </Button>
-                              <input
-                                type="number"
-                                className="form-control number-spinner"
-                                value={counter}
-                                onChange={(e) => setCounter(Number(e.target.value))}
-                              />
-                              <Button
-                                color="light"
-                                outline
-                                className="btn-icon number-spinner-btn number-plus"
-                                onClick={() => increaseCounter()}
-                              >
-                                <Icon name="plus"></Icon>
-                              </Button>
-                            </div>
-                          </li>
-                          <li>
-                            <Button color="primary">Add to Cart</Button>
-                          </li>
-                          <li className="ml-n1">
-                            <Button className="btn-icon btn-trigger text-primary">
-                              <Icon name="heart"></Icon>
+                              <Icon name="minus"></Icon>
                             </Button>
-                          </li>
-                        </ul>
-                      </div>
+                            <input
+                              type="number"
+                              className="form-control number-spinner"
+                              value={counter}
+                              onChange={(e) => setCounter(Number(e.target.value))}
+                            />
+                            <Button
+                              color="light"
+                              outline
+                              className="btn-icon number-spinner-btn number-plus"
+                              onClick={() => increaseCounter()}
+                            >
+                              <Icon name="plus"></Icon>
+                            </Button>
+                          </div>
+                        </li>
+                        <li>
+                          <Button color="primary">Add to Cart</Button>
+                        </li>
+                        <li className="ml-n1">
+                          <Button className="btn-icon btn-trigger text-primary">
+                            <Icon name="heart"></Icon>
+                          </Button>
+                        </li>
+                      </ul>
                     </div>
-                  </Col>
-                </Row>
-                {/* <hr className="hr border-light" /> */}
-              </div>
-            </Card>
-          </Block>
-
-          {/* <Block size="lg">
-            <BlockHead>
-              <BlockBetween>
-                <BlockHeadContent>
-                  <BlockTitle>Related Product</BlockTitle>
-                </BlockHeadContent>
-              </BlockBetween>
-            </BlockHead>
-            <Slider {...sliderSettings}>
-              {data.map((item) => {
-                return (
-                  <Col key={item.id}>
-                    <Card className="card-bordered product-card mr-3 ml-3">
-                      <div className="product-thumb">
-                        <Link to={`${process.env.PUBLIC_URL}/product-details/${item.id}`}>
-                          <img className="card-img-top" src={item.img} alt="" />
-                        </Link>
-                        <ul className="product-badges">
-                          {item.new && (
-                            <li>
-                              <Badge color="success">New</Badge>
-                            </li>
-                          )}
-                          {item.hot && (
-                            <li>
-                              <Badge color="danger">Hot</Badge>
-                            </li>
-                          )}
-                        </ul>
-                        <ul className="product-actions">
-                          <li>
-                            <a href="#cart" onClick={(ev) => ev.preventDefault()}>
-                              <Icon name="cart"></Icon>
-                            </a>
-                          </li>
-                          <li>
-                            <a href="#heart" onClick={(ev) => ev.preventDefault()}>
-                              <Icon name="heart"></Icon>
-                            </a>
-                          </li>
-                        </ul>
-                      </div>
-                      <div className="card-inner text-center">
-                        <ul className="product-tags">
-                          <li>
-                            <a href="#product" onClick={(ev) => ev.preventDefault()}>
-                              {item.name}
-                            </a>
-                          </li>
-                        </ul>
-                        <h5 className="product-title">
-                          <Link to={`${process.env.PUBLIC_URL}/product-details/${item.id}`}>{item.title}</Link>
-                        </h5>
-                        <div className="product-price text-primary h5">
-                          <small className="text-muted del fs-13px">${item.prevPrice}</small> ${item.newPrice}
-                        </div>
-                      </div>
-                    </Card>
-                  </Col>
-                );
-              })}
-            </Slider>
-          </Block> */}
-        </Content>
-      )}
+                  </div>
+                </Col>
+              </Row>
+            </div>
+          </Card>
+        </Block>
+      </Content>
     </React.Fragment>
   );
 };
