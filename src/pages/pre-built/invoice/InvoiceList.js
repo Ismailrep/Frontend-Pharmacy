@@ -15,26 +15,53 @@ import {
 } from "../../../components/Component";
 import { Link } from "react-router-dom";
 import { invoiceData } from "./Invoice";
+import axios from "axios";
+import { API_URL } from "../../../constants/API";
+import moment from "moment";
 
 const InvoiceList = () => {
   const [data, setData] = useState(invoiceData);
+  const [invoices, setInvoices] = useState({});
+  const [totalInvoices, setTotalInvoices] = useState(0);
   const [onSearch, setonSearch] = useState(true);
   const [onSearchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemPerPage, setItemPerPage] = useState(10);
-  const [sort, setSortState] = useState("asc");
+  const [asc, setAsc] = useState(true);
 
-  // Sorting data
-  const sortFunc = () => {
-    let defaultData = data;
-    if (sort === "dsc") {
-      let sortedData = defaultData.sort((a, b) => parseFloat(a.id) - parseFloat(b.id));
-      setData([...sortedData]);
-    } else if (sort === "asc") {
-      let sortedData = defaultData.sort((a, b) => parseFloat(b.id) - parseFloat(a.id));
-      setData([...sortedData]);
+  const getInvoices = async () => {
+    try {
+      const response = await axios.post(`${API_URL}/invoices/getInvoiceHeaders`, {
+        page: currentPage,
+        perPage: itemPerPage,
+        invoice_id: onSearchText,
+        asc,
+      });
+      setInvoices(response.data.invoices);
+      setTotalInvoices(response.data.count);
+    } catch (error) {
+      console.log(error);
     }
   };
+
+  // CONVERT PRICE TO CURRENCY TYPE
+  const toCurrency = (data) => {
+    const locale = new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumSignificantDigits: 3,
+    });
+    return locale.format(data);
+  };
+
+  // DATE FORMATING
+  const formatDate = (date) => {
+    return moment(date).format("DD-MM-YYYY, h:mm a");
+  };
+
+  useEffect(() => {
+    getInvoices();
+  }, [onSearchText, itemPerPage, asc]);
 
   // Changing state value when searching name
   useEffect(() => {
@@ -73,15 +100,19 @@ const InvoiceList = () => {
             <BlockHeadContent>
               <BlockTitle page>Invoices</BlockTitle>
               <BlockDes className="text-soft">
-                <p>You have total 937 invoices.</p>
+                <p>You have total {totalInvoices} invoices.</p>
               </BlockDes>
             </BlockHeadContent>
             <BlockHeadContent>
               <ul className="nk-block-tools g-3">
                 <li>
-                  <Button color="primary" className="btn-icon">
+                  <div className="d-flex flex-column align-items-end">
+                    <h6 className="title">Today</h6>
+                    <span>{moment().format("MMMM Do YYYY")}</span>
+                  </div>
+                  {/* <Button color="primary" className="btn-icon">
                     <Icon name="plus"></Icon>
-                  </Button>
+                  </Button> */}
                 </li>
               </ul>
             </BlockHeadContent>
@@ -143,27 +174,29 @@ const InvoiceList = () => {
                               <li>
                                 <span>Order</span>
                               </li>
-                              <li className={sort === "dsc" ? "active" : ""}>
+                              <li className={asc ? "" : "active"}>
                                 <DropdownItem
                                   tag="a"
                                   href="#dropdownitem"
                                   onClick={(ev) => {
                                     ev.preventDefault();
-                                    setSortState("dsc");
-                                    sortFunc("dsc");
+                                    setAsc(false);
+                                    // setSortState("dsc");
+                                    // sortFunc("dsc");
                                   }}
                                 >
                                   DESC
                                 </DropdownItem>
                               </li>
-                              <li className={sort === "asc" ? "active" : ""}>
+                              <li className={asc ? "active" : ""}>
                                 <DropdownItem
                                   tag="a"
                                   href="#dropdownitem"
                                   onClick={(ev) => {
                                     ev.preventDefault();
-                                    setSortState("asc");
-                                    sortFunc("asc");
+                                    setAsc(true);
+                                    // setSortState("asc");
+                                    // sortFunc("asc");
                                   }}
                                 >
                                   ASC
@@ -177,15 +210,6 @@ const InvoiceList = () => {
                   </div>
                   <div className={`card-search search-wrap ${!onSearch ? "active" : ""}`}>
                     <div className="search-content">
-                      <Button
-                        className="search-back btn-icon toggle-search"
-                        onClick={() => {
-                          setSearchText("");
-                          toggle();
-                        }}
-                      >
-                        <Icon name="arrow-left"></Icon>
-                      </Button>
                       <input
                         type="text"
                         className="form-control border-transparent form-focus-none"
@@ -196,6 +220,15 @@ const InvoiceList = () => {
                       <Button className="search-submit btn-icon">
                         <Icon name="search"></Icon>
                       </Button>
+                      <Button
+                        className="search-back btn-icon toggle-search"
+                        onClick={() => {
+                          setSearchText("");
+                          toggle();
+                        }}
+                      >
+                        <Icon name="arrow-left"></Icon>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -205,8 +238,14 @@ const InvoiceList = () => {
                   <thead className="tb-odr-head">
                     <tr className="tb-odr-item">
                       <th className="tb-odr-info">
-                        <span className="tb-odr-id">Order ID</span>
+                        <span className="tb-odr-id">ID</span>
                         <span className="tb-odr-date d-none d-md-inline-block">Date</span>
+                      </th>
+                      <th className="tb-odr-info">
+                        <span className="tb-odr-id">Customer</span>
+                      </th>
+                      <th className="tb-odr-info">
+                        <span className="tb-odr-id">Purchased</span>
                       </th>
                       <th className="tb-odr-amount">
                         <span className="tb-odr-total">Amount</span>
@@ -216,19 +255,34 @@ const InvoiceList = () => {
                     </tr>
                   </thead>
                   <tbody className="tb-odr-body">
-                    {currentItems.length > 0
-                      ? currentItems.map((item) => {
+                    {invoices.length > 0
+                      ? invoices.map((item) => {
                           return (
                             <tr className="tb-odr-item" key={item.id}>
                               <td className="tb-odr-info">
                                 <span className="tb-odr-id">
-                                  <Link to={`/invoice-details/${item.id}`}>#{item.orderId}</Link>
+                                  <Link to={`/admin/invoice-details/${item.invoice_id}`}>{item.invoice_id}</Link>
                                 </span>
-                                <span className="tb-odr-date">{item.date}</span>
+                                <span className="tb-odr-date">
+                                  {/* {item.createdAt} */}
+                                  {formatDate(item.createdAt)}
+                                </span>
+                              </td>
+                              <td>
+                                <span>
+                                  {item.user.first_name} {item.user.last_name}
+                                </span>
+                              </td>
+                              <td>
+                                <span>
+                                  {item.invoice_details.length > 1
+                                    ? item.invoice_details.length + " items"
+                                    : item.invoice_details[0].product.name}
+                                </span>
                               </td>
                               <td className="tb-odr-amount">
                                 <span className="tb-odr-total">
-                                  <span className="amount">${item.totalAmount}</span>
+                                  <span className="amount">{toCurrency(item.grand_total)}</span>
                                 </span>
                                 <span className="tb-odr-status">
                                   <Badge
@@ -252,13 +306,13 @@ const InvoiceList = () => {
                                       <Icon name="printer-fill"></Icon>
                                     </Button>
                                   </Link>
-                                  <Link to={`/invoice-details/${item.id}`}>
+                                  <Link to={`/admin/invoice-details/${item.invoice_id}`}>
                                     <Button color="primary" size="sm" className="btn btn-dim">
                                       View
                                     </Button>
                                   </Link>
                                 </div>
-                                <Link to={`/invoice-details/${item.id}`}>
+                                <Link to={`/invoice-details/${item.invoice_id}`}>
                                   <Button className="btn-pd-auto d-sm-none">
                                     <Icon name="chevron-right"></Icon>
                                   </Button>
@@ -272,11 +326,11 @@ const InvoiceList = () => {
                 </table>
               </div>
               <div className="card-inner">
-                {currentItems.length > 0 ? (
+                {invoices.length > 0 ? (
                   <PaginationComponent
                     noDown
                     itemPerPage={itemPerPage}
-                    totalItems={data.length}
+                    totalItems={totalInvoices}
                     paginate={paginate}
                     currentPage={currentPage}
                   />

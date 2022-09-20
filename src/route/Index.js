@@ -111,12 +111,12 @@ import FileManager from "../pages/app/file-manager/FileManager";
 import Inbox from "../pages/app/inbox/Inbox";
 import Calender from "../pages/app/calender/Calender";
 import JsTreePreview from "../pages/components/misc/JsTree";
-import QuillPreview from "../pages/components/forms/rich-editor/QuillPreview";
 import TinymcePreview from "../pages/components/forms/rich-editor/TinymcePreview";
 import KnobPreview from "../pages/components/charts/KnobPreview";
 import { FileManagerContextProvider } from "../pages/app/file-manager/FileManagerContext";
 import Cart from "../pages/Cart";
 import Verified from "../pages/auth/Verified";
+import InvoiceDetailsAdm from "../pages/pre-built/invoice/InvoiceDetailsAdm";
 
 const Pages = () => {
   useLayoutEffect(() => {
@@ -243,6 +243,7 @@ const Pages = () => {
         ></Route>
         <Route exact path={`/admin/invoice-list`} component={InvoiceList}></Route>
         <Route exact path={`/invoice-details/:id`} component={InvoiceDetails}></Route>
+        <Route exact path={`/admin/invoice-details/:id`} component={InvoiceDetailsAdm}></Route>
 
         {/*Demo Pages*/}
         <Route exact path={`/pages/terms-policy`} component={Terms}></Route>
