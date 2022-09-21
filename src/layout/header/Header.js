@@ -7,6 +7,7 @@ import Notification from "./dropdown/notification/Notification";
 import HeaderSearch from "../header-search/HeaderSearch";
 import ChatDropdown from "./dropdown/chat/Chat";
 import CartDropdown from "./dropdown/cart/Cart";
+import TransactionDropdown from "./dropdown/transaction/Transaction";
 import { useSelector } from "react-redux";
 
 const Header = ({ fixed, theme, className, setVisibility, ...props }) => {
@@ -45,7 +46,7 @@ const Header = ({ fixed, theme, className, setVisibility, ...props }) => {
                     <CartDropdown />
                   </li>
                   <li className="chats-dropdown hide-mb-xs" onClick={() => setVisibility(false)}>
-                    <ChatDropdown />
+                    <TransactionDropdown />
                   </li>
                   <li className="notification-dropdown mr-n1" onClick={() => setVisibility(false)}>
                     <Notification />

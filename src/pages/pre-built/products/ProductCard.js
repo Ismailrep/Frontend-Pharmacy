@@ -251,7 +251,7 @@ const ProductCard = () => {
                         <Link to={`${process.env.PUBLIC_URL}/product-details/${item.id}`}>
                           <img
                             className="card-img-top"
-                            style={{ maxHeight: "500px" }}
+                            style={{ maxHeight: "400px" }}
                             src={getImageUrl(item.image)}
                             alt=""
                           />
@@ -270,15 +270,15 @@ const ProductCard = () => {
                         </ul>
                         <ul className="product-actions">
                           <li>
-                            <a href="#cart" onClick={(ev) => ev.preventDefault()}>
+                            <a href={`/add-to-cart/${item.id}`} onClick={(ev) => ev.preventDefault()}>
                               <Icon name="cart"></Icon>
                             </a>
                           </li>
-                          <li>
+                          {/* <li>
                             <a href="#like" onClick={(ev) => ev.preventDefault()}>
                               <Icon name="heart"></Icon>
                             </a>
-                          </li>
+                          </li> */}
                         </ul>
                       </div>
                       <div className="card-inner text-center">

@@ -117,6 +117,7 @@ import { FileManagerContextProvider } from "../pages/app/file-manager/FileManage
 import Cart from "../pages/Cart";
 import Verified from "../pages/auth/Verified";
 import InvoiceDetailsAdm from "../pages/pre-built/invoice/InvoiceDetailsAdm";
+import Transaction from "../pages/pre-built/transaction/TransactionList";
 
 const Pages = () => {
   useLayoutEffect(() => {
@@ -126,6 +127,9 @@ const Pages = () => {
   return (
     <Suspense fallback={<div />}>
       <Switch>
+        {/* Transaction */}
+        <Route exact path={`/user/transaction-list`} component={Transaction}></Route>
+
         {/* Cart */}
         <Route exact path={`/cart`} component={Cart}></Route>
 
