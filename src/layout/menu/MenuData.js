@@ -14,15 +14,20 @@ const menu = [
         text: "Dashboard",
         link: "/admin",
       },
-      {
-        icon: "bag-fill",
-        text: "Orders",
-        link: "/admin/orders",
-      },
+      // {
+      //   icon: "bag-fill",
+      //   text: "Orders",
+      //   link: "/admin/orders",
+      // },
       {
         icon: "package-fill",
         text: "Products",
         link: "/admin/products",
+      },
+      {
+        icon: "tranx-fill",
+        text: "Transactions",
+        link: "/admin/transactions",
       },
       {
         icon: "users-fill",
@@ -33,11 +38,6 @@ const menu = [
         icon: "users-fill",
         text: "Admins",
         link: "/admin/admin-list",
-      },
-      {
-        icon: "file-docs",
-        text: "Invoices",
-        link: "/admin/invoice-list",
       },
       {
         icon: "chat-fill",

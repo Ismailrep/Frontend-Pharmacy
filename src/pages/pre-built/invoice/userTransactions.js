@@ -24,13 +24,14 @@ import {
   Row,
   Col,
 } from "../../../components/Component";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import { API_URL } from "../../../constants/API";
 import moment from "moment";
 import DatePicker from "react-datepicker";
 
-const InvoiceList = () => {
+const UserTransactions = () => {
+  const { user_id } = useParams();
   const [invoices, setInvoices] = useState([]);
   const [totalInvoices, setTotalInvoices] = useState(0);
   const [item, setItem] = useState({});
@@ -48,10 +49,11 @@ const InvoiceList = () => {
 
   const getInvoices = async (page) => {
     try {
-      const response = await axios.post(`${API_URL}/invoices/getInvoiceHeaders`, {
+      const response = await axios.post(`${API_URL}/invoices/getInvoicesByUserId`, {
         page,
         perPage: itemPerPage,
         invoice_id: onSearchText,
+        user_id,
         asc,
         startDate,
         endDate,
@@ -120,14 +122,20 @@ const InvoiceList = () => {
         <BlockHead size="sm">
           <BlockBetween>
             <BlockHeadContent>
-              <BlockTitle page>Transactions</BlockTitle>
+              <BlockTitle page>{invoices.length ? invoices[0].user.first_name + "'s Transactions" : null}</BlockTitle>
               <BlockDes className="text-soft">
-                <p>You have total {totalInvoices} transactions.</p>
+                <p>Total {totalInvoices} transactions.</p>
               </BlockDes>
             </BlockHeadContent>
 
-            {/* <BlockHeadContent>
-              <div className="d-flex flex-column align-items-end">
+            <BlockHeadContent className="d-flex flex-column align-items-end">
+              <Link to={`/admin/customer`}>
+                <Button color="light" outline className="bg-white d-none d-sm-inline-flex mb-3">
+                  <Icon name="arrow-left"></Icon>
+                  <span>Back</span>
+                </Button>
+              </Link>
+              {/* <div className="d-flex flex-column align-items-end">
                 <span className="text-soft">Filter by Date</span>
                 <DatePicker
                   placeholderText={moment().format("l")}
@@ -140,8 +148,8 @@ const InvoiceList = () => {
                   isClearable={true}
                   className="form-control date-picker"
                 />
-              </div>
-            </BlockHeadContent> */}
+              </div> */}
+            </BlockHeadContent>
           </BlockBetween>
         </BlockHead>
 
@@ -151,7 +159,9 @@ const InvoiceList = () => {
               <div className="card-inner">
                 <div className="card-title-group">
                   <div className="card-title">
-                    <h5 className="title">All Transactions</h5>
+                    <h5 className="title">
+                      All {invoices.length ? invoices[0].user.first_name + "'s" : null} Transactions
+                    </h5>
                   </div>
                   <div className="card-tools mr-n1">
                     <ul className="btn-toolbar">
@@ -185,12 +195,12 @@ const InvoiceList = () => {
                                 <span>Show(per page)</span>
                               </li>
                               <li className={itemPerPage === 1 ? "active" : ""}>
-                                <DropdownItem tag="a" href="#dropdownitem" onClick={() => setPerPage(1)}>
+                                <DropdownItem tag="a" onClick={() => setPerPage(1)}>
                                   1 item
                                 </DropdownItem>
                               </li>
                               <li className={itemPerPage === 2 ? "active" : ""}>
-                                <DropdownItem tag="a" href="#dropdownitem" onClick={() => setPerPage(2)}>
+                                <DropdownItem tag="a" onClick={() => setPerPage(2)}>
                                   2 items
                                 </DropdownItem>
                               </li>
@@ -271,7 +281,9 @@ const InvoiceList = () => {
                             <tr className="tb-odr-item" key={item.id}>
                               <td className="tb-odr-info">
                                 <span className="tb-odr-id">
-                                  <Link to={`/admin/invoice-details/${item.invoice_id}/0`}>{item.invoice_id}</Link>
+                                  <Link to={`/admin/invoice-details/${item.invoice_id}/${user_id}`}>
+                                    {item.invoice_id}
+                                  </Link>
                                 </span>
                                 <span className="tb-odr-date">
                                   {moment(item.createdAt).format("M-DD-YYYY, h:mm a")}
@@ -332,13 +344,13 @@ const InvoiceList = () => {
                                       <Icon name="printer-fill"></Icon>
                                     </Button>
                                   </Link> */}
-                                  <Link to={`/admin/invoice-details/${item.invoice_id}/0`}>
+                                  <Link to={`/admin/invoice-details/${item.invoice_id}/${user_id}`}>
                                     <Button color="primary" size="sm" className="btn btn-dim">
                                       View
                                     </Button>
                                   </Link>
                                 </div>
-                                {/* <Link to={`/admin/invoice-details/${item.invoice_id}/0`}>
+                                {/* <Link to={`/invoice-details/${item.invoice_id}`}>
                                   <Button className="btn-pd-auto d-sm-none">
                                     <Icon name="chevron-right"></Icon>
                                   </Button>
@@ -457,4 +469,4 @@ const InvoiceList = () => {
   );
 };
 
-export default InvoiceList;
+export default UserTransactions;

@@ -35,7 +35,7 @@ import Content from "../../../layout/content/Content";
 import Head from "../../../layout/head/Head";
 import { filterRole, filterStatus } from "./UserData";
 import { bulkActionOptions, findUpper } from "../../../utils/Utils";
-import { Link } from "react-router-dom";
+import { Link, Redirect } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { UserContext } from "./UserContext";
 import axios from "axios";
@@ -66,6 +66,8 @@ const UserListRegularPage = () => {
   const [itemPerPage, setItemPerPage] = useState(10);
   const [sort, setSortState] = useState("");
   const [user, setUser] = useState([]);
+
+  const [redirect, setRedirect] = useState({ user_id: 0 });
 
   // Sorting data
   const sortFunc = (params) => {
@@ -280,7 +282,10 @@ const UserListRegularPage = () => {
 
   const { errors, register, handleSubmit } = useForm();
 
-  console.log(data);
+  if (redirect.user_id) {
+    return <Redirect to={`/admin/user-transactions/${redirect.user_id}`} />;
+  }
+
   return (
     <React.Fragment>
       <Head title="User List - Regular"></Head>
@@ -786,7 +791,7 @@ const UserListRegularPage = () => {
                                 </DropdownToggle>
                                 <DropdownMenu right>
                                   <ul className="link-list-opt no-bdr">
-                                    <li onClick={() => onEditClick(item.uuid)}>
+                                    <li onClick={() => setRedirect({ user_id: item.id })}>
                                       <DropdownItem
                                         tag="a"
                                         href="#edit"
@@ -794,8 +799,8 @@ const UserListRegularPage = () => {
                                           ev.preventDefault();
                                         }}
                                       >
-                                        <Icon name="edit"></Icon>
-                                        <span>Edit</span>
+                                        <Icon name="tranx"></Icon>
+                                        <span>Transactions</span>
                                       </DropdownItem>
                                     </li>
                                     {item.active_status == true && (
