@@ -42,7 +42,7 @@ const UserTransactions = () => {
   const [onSearch, setonSearch] = useState(true);
   const [onSearchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemPerPage, setItemPerPage] = useState(1);
+  const [itemPerPage, setItemPerPage] = useState(2);
   const [asc, setAsc] = useState(false);
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -99,11 +99,23 @@ const UserTransactions = () => {
 
   useEffect(() => {
     getInvoices(1);
-  }, [onSearchText, itemPerPage, asc, startDate, endDate]);
+  }, [itemPerPage, asc, startDate, endDate]);
+
+  useEffect(() => {
+    if (!onSearchText) {
+      getInvoices(1);
+    }
+  }, [onSearchText]);
 
   // onChange function for searching name
   const onFilterChange = (e) => {
     setSearchText(e.target.value);
+  };
+
+  const onKeyDown = (event) => {
+    if (event.key === "Enter") {
+      getInvoices(1);
+    }
   };
 
   // Change Page
@@ -135,20 +147,6 @@ const UserTransactions = () => {
                   <span>Back</span>
                 </Button>
               </Link>
-              {/* <div className="d-flex flex-column align-items-end">
-                <span className="text-soft">Filter by Date</span>
-                <DatePicker
-                  placeholderText={moment().format("l")}
-                  startDate={startDate}
-                  onChange={(update) => {
-                    setDateRange(update);
-                  }}
-                  endDate={endDate}
-                  selectsRange={true}
-                  isClearable={true}
-                  className="form-control date-picker"
-                />
-              </div> */}
             </BlockHeadContent>
           </BlockBetween>
         </BlockHead>
@@ -170,10 +168,11 @@ const UserTransactions = () => {
                           <Icon name="search"></Icon>
                         </Button>
                       </li>
+
                       <li className="btn-toolbar-sep"></li>
                       <li>
                         <DatePicker
-                          placeholderText="Filter by date range"
+                          placeholderText={moment(new Date().getTime()).format("MM/DD/yyyy")}
                           startDate={startDate}
                           onChange={(update) => {
                             setDateRange(update);
@@ -184,6 +183,7 @@ const UserTransactions = () => {
                           className="form-control date-picker"
                         />
                       </li>
+
                       <li>
                         <UncontrolledDropdown>
                           <DropdownToggle tag="a" className="dropdown-toggle btn btn-icon btn-trigger">
@@ -194,14 +194,14 @@ const UserTransactions = () => {
                               <li>
                                 <span>Show(per page)</span>
                               </li>
-                              <li className={itemPerPage === 1 ? "active" : ""}>
-                                <DropdownItem tag="a" onClick={() => setPerPage(1)}>
-                                  1 item
-                                </DropdownItem>
-                              </li>
                               <li className={itemPerPage === 2 ? "active" : ""}>
                                 <DropdownItem tag="a" onClick={() => setPerPage(2)}>
-                                  2 items
+                                  2 item
+                                </DropdownItem>
+                              </li>
+                              <li className={itemPerPage === 4 ? "active" : ""}>
+                                <DropdownItem tag="a" onClick={() => setPerPage(4)}>
+                                  4 items
                                 </DropdownItem>
                               </li>
                             </ul>
@@ -225,6 +225,7 @@ const UserTransactions = () => {
                       </li>
                     </ul>
                   </div>
+
                   <div className={`card-search search-wrap ${!onSearch ? "active" : ""}`}>
                     <div className="search-content">
                       <input
@@ -233,23 +234,27 @@ const UserTransactions = () => {
                         placeholder="Search by Id"
                         value={onSearchText}
                         onChange={(e) => onFilterChange(e)}
+                        onKeyDown={onKeyDown}
                       />
-                      <Button className="search-submit btn-icon">
-                        <Icon name="search"></Icon>
-                      </Button>
+
                       <Button
-                        className="search-back btn-icon toggle-search"
+                        className="search-submit btn-icon toggle-search"
                         onClick={() => {
                           setSearchText("");
                           toggle();
                         }}
                       >
-                        <Icon name="arrow-left"></Icon>
+                        <Icon name="cross"></Icon>
+                      </Button>
+
+                      <Button className="search-back btn-icon">
+                        <Icon name="search"></Icon>
                       </Button>
                     </div>
                   </div>
                 </div>
               </div>
+
               <div className="card-inner p-0">
                 <table className="table table-orders">
                   <thead className="tb-odr-head">
@@ -274,6 +279,7 @@ const UserTransactions = () => {
                       <th className="tb-odr-action">&nbsp;</th>
                     </tr>
                   </thead>
+
                   <tbody className="tb-odr-body">
                     {invoices.length > 0
                       ? invoices.map((item) => {
@@ -281,7 +287,7 @@ const UserTransactions = () => {
                             <tr className="tb-odr-item" key={item.id}>
                               <td className="tb-odr-info">
                                 <span className="tb-odr-id">
-                                  <Link to={`/admin/invoice-details/${item.invoice_id}/${user_id}`}>
+                                  <Link to={`/admin/invoice-details/${item.invoice_id}?userId=${user_id}`}>
                                     {item.invoice_id}
                                   </Link>
                                 </span>
@@ -289,11 +295,13 @@ const UserTransactions = () => {
                                   {moment(item.createdAt).format("M-DD-YYYY, h:mm a")}
                                 </span>
                               </td>
+
                               <td>
                                 <span>
                                   {item.user.first_name} {item.user.last_name}
                                 </span>
                               </td>
+
                               <td>
                                 <span>
                                   {item.invoice_details.length > 1
@@ -301,6 +309,7 @@ const UserTransactions = () => {
                                     : item.invoice_details[0].product.name}
                                 </span>
                               </td>
+
                               <td className="tb-odr-amount">
                                 <span className="tb-odr-total">
                                   <span className="amount">{toCurrency(item.grand_total)}</span>
@@ -320,6 +329,7 @@ const UserTransactions = () => {
                                   </Badge>
                                 </span>
                               </td>
+
                               <td>
                                 {item.payment_confirmation ? (
                                   <Button
@@ -337,6 +347,7 @@ const UserTransactions = () => {
                                   <span>No payment confirmation</span>
                                 )}
                               </td>
+
                               <td className="tb-odr-action">
                                 <div className="tb-odr-btns d-none d-sm-inline">
                                   {/* <Link to={`/invoice-print/${item.invoice_id}`} target="_blank">
@@ -344,17 +355,12 @@ const UserTransactions = () => {
                                       <Icon name="printer-fill"></Icon>
                                     </Button>
                                   </Link> */}
-                                  <Link to={`/admin/invoice-details/${item.invoice_id}/${user_id}`}>
+                                  <Link to={`/admin/invoice-details/${item.invoice_id}?userId=${user_id}`}>
                                     <Button color="primary" size="sm" className="btn btn-dim">
                                       View
                                     </Button>
                                   </Link>
                                 </div>
-                                {/* <Link to={`/invoice-details/${item.invoice_id}`}>
-                                  <Button className="btn-pd-auto d-sm-none">
-                                    <Icon name="chevron-right"></Icon>
-                                  </Button>
-                                </Link> */}
                               </td>
                             </tr>
                           );
@@ -363,15 +369,18 @@ const UserTransactions = () => {
                   </tbody>
                 </table>
               </div>
+
               <div className="card-inner">
                 {invoices.length > 0 ? (
-                  <PaginationComponent
-                    noDown
-                    itemPerPage={itemPerPage}
-                    totalItems={totalInvoices}
-                    paginate={paginate}
-                    currentPage={currentPage}
-                  />
+                  <div className="d-flex justify-content-end">
+                    <PaginationComponent
+                      noDown
+                      itemPerPage={itemPerPage}
+                      totalItems={totalInvoices}
+                      paginate={paginate}
+                      currentPage={currentPage}
+                    />
+                  </div>
                 ) : (
                   <div className="text-center">
                     <span className="text-silent">No data found</span>

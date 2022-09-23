@@ -12,14 +12,23 @@ import {
 import Content from "../../../layout/content/Content";
 import Head from "../../../layout/head/Head";
 import LogoDark from "../../../images/logo-dark.png";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useLocation } from "react-router-dom";
 import axios from "axios";
 import { API_URL } from "../../../constants/API";
 import moment from "moment";
 
+function useQuery() {
+  const { search } = useLocation();
+
+  return React.useMemo(() => new URLSearchParams(search), [search]);
+}
+
 const InvoiceDetailsAdm = () => {
-  const { id, user_id } = useParams();
+  let query = useQuery();
+  const { id } = useParams();
   const [invoice, setInvoice] = useState({ user: {}, invoice_details: [], address: {} });
+
+  const userId = query.get("userId");
 
   const getInvoice = async () => {
     try {
@@ -87,11 +96,7 @@ const InvoiceDetailsAdm = () => {
               </BlockHeadContent>
               <BlockHeadContent>
                 <Link
-                  to={
-                    user_id === "0"
-                      ? `${process.env.PUBLIC_URL}/admin/transactions`
-                      : `/admin/user-transactions/${user_id}`
-                  }
+                  to={userId ? `/admin/user-transactions/${userId}` : `${process.env.PUBLIC_URL}/admin/transactions`}
                 >
                   <Button color="light" outline className="bg-white d-none d-sm-inline-flex">
                     <Icon name="arrow-left"></Icon>

@@ -41,7 +41,7 @@ const InvoiceList = () => {
   const [onSearch, setonSearch] = useState(true);
   const [onSearchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemPerPage, setItemPerPage] = useState(1);
+  const [itemPerPage, setItemPerPage] = useState(3);
   const [asc, setAsc] = useState(false);
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -97,11 +97,23 @@ const InvoiceList = () => {
 
   useEffect(() => {
     getInvoices(1);
-  }, [onSearchText, itemPerPage, asc, startDate, endDate]);
+  }, [itemPerPage, asc, startDate, endDate]);
+
+  useEffect(() => {
+    if (!onSearchText) {
+      getInvoices(1);
+    }
+  }, [onSearchText]);
 
   // onChange function for searching name
   const onFilterChange = (e) => {
     setSearchText(e.target.value);
+  };
+
+  const onKeyDown = (event) => {
+    if (event.key === "Enter") {
+      getInvoices(1);
+    }
   };
 
   // Change Page
@@ -160,10 +172,11 @@ const InvoiceList = () => {
                           <Icon name="search"></Icon>
                         </Button>
                       </li>
+
                       <li className="btn-toolbar-sep"></li>
-                      <li>
+                      <li style={{ width: "210px" }}>
                         <DatePicker
-                          placeholderText="Filter by date range"
+                          placeholderText={moment(new Date().getTime()).format("MM/DD/yyyy")}
                           startDate={startDate}
                           onChange={(update) => {
                             setDateRange(update);
@@ -171,12 +184,14 @@ const InvoiceList = () => {
                           endDate={endDate}
                           selectsRange={true}
                           isClearable={true}
+                          popperPlacement="top-end"
                           className="form-control date-picker"
                         />
                       </li>
+
                       <li>
                         <UncontrolledDropdown>
-                          <DropdownToggle tag="a" className="dropdown-toggle btn btn-icon btn-trigger">
+                          <DropdownToggle tag="a" className="dropdown-toggle btn btn-icon btn-trigger ml-2">
                             <Icon name="setting"></Icon>
                           </DropdownToggle>
                           <DropdownMenu right>
@@ -184,14 +199,14 @@ const InvoiceList = () => {
                               <li>
                                 <span>Show(per page)</span>
                               </li>
-                              <li className={itemPerPage === 1 ? "active" : ""}>
-                                <DropdownItem tag="a" href="#dropdownitem" onClick={() => setPerPage(1)}>
-                                  1 item
+                              <li className={itemPerPage === 3 ? "active" : ""}>
+                                <DropdownItem tag="a" href="#dropdownitem" onClick={() => setPerPage(3)}>
+                                  3 items
                                 </DropdownItem>
                               </li>
-                              <li className={itemPerPage === 2 ? "active" : ""}>
-                                <DropdownItem tag="a" href="#dropdownitem" onClick={() => setPerPage(2)}>
-                                  2 items
+                              <li className={itemPerPage === 5 ? "active" : ""}>
+                                <DropdownItem tag="a" href="#dropdownitem" onClick={() => setPerPage(5)}>
+                                  5 items
                                 </DropdownItem>
                               </li>
                             </ul>
@@ -215,6 +230,7 @@ const InvoiceList = () => {
                       </li>
                     </ul>
                   </div>
+
                   <div className={`card-search search-wrap ${!onSearch ? "active" : ""}`}>
                     <div className="search-content">
                       <input
@@ -223,23 +239,25 @@ const InvoiceList = () => {
                         placeholder="Search by Id"
                         value={onSearchText}
                         onChange={(e) => onFilterChange(e)}
+                        onKeyDown={onKeyDown}
                       />
-                      <Button className="search-submit btn-icon">
-                        <Icon name="search"></Icon>
-                      </Button>
                       <Button
-                        className="search-back btn-icon toggle-search"
+                        className="search-submit btn-icon toggle-search"
                         onClick={() => {
                           setSearchText("");
                           toggle();
                         }}
                       >
-                        <Icon name="arrow-left"></Icon>
+                        <Icon name="cross"></Icon>
+                      </Button>
+                      <Button className="search-back btn-icon ">
+                        <Icon name="search"></Icon>
                       </Button>
                     </div>
                   </div>
                 </div>
               </div>
+
               <div className="card-inner p-0">
                 <table className="table table-orders">
                   <thead className="tb-odr-head">
@@ -264,6 +282,7 @@ const InvoiceList = () => {
                       <th className="tb-odr-action">&nbsp;</th>
                     </tr>
                   </thead>
+
                   <tbody className="tb-odr-body">
                     {invoices.length > 0
                       ? invoices.map((item) => {
@@ -271,17 +290,19 @@ const InvoiceList = () => {
                             <tr className="tb-odr-item" key={item.id}>
                               <td className="tb-odr-info">
                                 <span className="tb-odr-id">
-                                  <Link to={`/admin/invoice-details/${item.invoice_id}/0`}>{item.invoice_id}</Link>
+                                  <Link to={`/admin/invoice-details/${item.invoice_id}`}>{item.invoice_id}</Link>
                                 </span>
                                 <span className="tb-odr-date">
                                   {moment(item.createdAt).format("M-DD-YYYY, h:mm a")}
                                 </span>
                               </td>
+
                               <td>
                                 <span>
                                   {item.user.first_name} {item.user.last_name}
                                 </span>
                               </td>
+
                               <td>
                                 <span>
                                   {item.invoice_details.length > 1
@@ -289,6 +310,7 @@ const InvoiceList = () => {
                                     : item.invoice_details[0].product.name}
                                 </span>
                               </td>
+
                               <td className="tb-odr-amount">
                                 <span className="tb-odr-total">
                                   <span className="amount">{toCurrency(item.grand_total)}</span>
@@ -308,6 +330,7 @@ const InvoiceList = () => {
                                   </Badge>
                                 </span>
                               </td>
+
                               <td>
                                 {item.payment_confirmation ? (
                                   <Button
@@ -317,7 +340,7 @@ const InvoiceList = () => {
                                     }}
                                     color="primary"
                                     size="sm"
-                                    className="btn btn-dim"
+                                    className="btn"
                                   >
                                     {item.payment_confirmation.bank}
                                   </Button>
@@ -325,6 +348,7 @@ const InvoiceList = () => {
                                   <span>No payment confirmation</span>
                                 )}
                               </td>
+
                               <td className="tb-odr-action">
                                 <div className="tb-odr-btns d-none d-sm-inline">
                                   {/* <Link to={`/invoice-print/${item.invoice_id}`} target="_blank">
@@ -332,17 +356,12 @@ const InvoiceList = () => {
                                       <Icon name="printer-fill"></Icon>
                                     </Button>
                                   </Link> */}
-                                  <Link to={`/admin/invoice-details/${item.invoice_id}/0`}>
+                                  <Link to={`/admin/invoice-details/${item.invoice_id}`}>
                                     <Button color="primary" size="sm" className="btn btn-dim">
                                       View
                                     </Button>
                                   </Link>
                                 </div>
-                                {/* <Link to={`/admin/invoice-details/${item.invoice_id}/0`}>
-                                  <Button className="btn-pd-auto d-sm-none">
-                                    <Icon name="chevron-right"></Icon>
-                                  </Button>
-                                </Link> */}
                               </td>
                             </tr>
                           );
@@ -351,15 +370,18 @@ const InvoiceList = () => {
                   </tbody>
                 </table>
               </div>
+
               <div className="card-inner">
                 {invoices.length > 0 ? (
-                  <PaginationComponent
-                    noDown
-                    itemPerPage={itemPerPage}
-                    totalItems={totalInvoices}
-                    paginate={paginate}
-                    currentPage={currentPage}
-                  />
+                  <div className="d-flex justify-content-end">
+                    <PaginationComponent
+                      noDown
+                      itemPerPage={itemPerPage}
+                      totalItems={totalInvoices}
+                      paginate={paginate}
+                      currentPage={currentPage}
+                    />
+                  </div>
                 ) : (
                   <div className="text-center">
                     <span className="text-silent">No data found</span>
@@ -397,6 +419,7 @@ const InvoiceList = () => {
                   <small className="text-primary"> #{item.invoice_id}</small>
                 </h4>
               </div>
+
               <div className="nk-tnx-details mt-sm-3">
                 <Row className="gy-3">
                   <Col lg={6}>

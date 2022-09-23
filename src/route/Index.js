@@ -249,7 +249,7 @@ const Pages = () => {
         <Route exact path={`/admin/transactions`} component={InvoiceList}></Route>
         <Route exact path={`/admin/user-transactions/:user_id`} component={UserTransactions}></Route>
         <Route exact path={`/invoice-details/:id`} component={InvoiceDetails}></Route>
-        <Route exact path={`/admin/invoice-details/:id/:user_id`} component={InvoiceDetailsAdm}></Route>
+        <Route exact path={`/admin/invoice-details/:id`} component={InvoiceDetailsAdm}></Route>
 
         {/*Demo Pages*/}
         <Route exact path={`/pages/terms-policy`} component={Terms}></Route>
