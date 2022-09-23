@@ -1,7 +1,7 @@
 const init_state = {
   full_name: "",
   email: "",
-  id: 0,
+  id: null,
   errMsg: "",
   isLoading: false,
   storageIsChecked: false,

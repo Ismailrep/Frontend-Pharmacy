@@ -96,6 +96,7 @@ const InvoiceList = () => {
   };
 
   useEffect(() => {
+    setCurrentPage(1);
     getInvoices(1);
   }, [itemPerPage, asc, startDate, endDate]);
 

@@ -14,7 +14,6 @@ import EcomOrder from "../pages/panel/e-commerce/order/OrderDefault";
 import EcomSupport from "../pages/panel/e-commerce/support/Messages";
 import EcomProducts from "../pages/panel/e-commerce/product/ProductList";
 import EcomCustomer from "../pages/panel/e-commerce/customer/CustomerList";
-import AdminList from "../pages/panel/e-commerce/customer/AdminList";
 import EcomCustomerDetails from "../pages/panel/e-commerce/customer/CustomerDetails";
 import EcomIntegration from "../pages/panel/e-commerce/integration/Integration";
 import EcomSettings from "../pages/panel/e-commerce/settings/Settings";
@@ -119,6 +118,7 @@ import Verified from "../pages/auth/Verified";
 import InvoiceDetailsAdm from "../pages/pre-built/invoice/InvoiceDetailsAdm";
 import Transaction from "../pages/pre-built/transaction/TransactionList";
 import UserTransactions from "../pages/pre-built/invoice/userTransactions";
+import AdminList from "../pages/panel/e-commerce/customer/AdminList";
 
 const Pages = () => {
   useLayoutEffect(() => {
@@ -148,15 +148,6 @@ const Pages = () => {
             </AdminProvider>
           )}
         ></Route>
-        {/* <Route
-          exact
-          path={`/admin/customer`}
-          render={() => (
-            <CustomerProvider>
-              <EcomCustomer />
-            </CustomerProvider>
-          )}
-        ></Route> */}
         <Route
           exact
           path={`/admin/customer-details/:id`}
