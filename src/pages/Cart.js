@@ -26,10 +26,22 @@ import ProductH from "../images/product/h.png";
 import Dropzone from "react-dropzone";
 import { Modal, ModalBody } from "reactstrap";
 import { RSelect } from "../components/Component";
+import axios from "axios";
+import { API_URL } from "../constants/API";
+import { useParams } from "react-router";
 
-const ProductList = () => {
-  const [data, setData] = useState(productData);
+const CartList = () => {
+  const user = JSON.parse(window.localStorage.getItem("profile"));
+  const [cartData, setCartData] = useState([]);
+  const [data, setData] = useState(cartData);
+  const [products, setProducts] = useState([]);
+  const [cartItem, setCartItem] = useState([]);
   const [sm, updateSm] = useState(false);
+  const [onSearchText, setSearchText] = useState("");
+  const [categoryId, setCategoryId] = useState(null);
+  const [categories, setCategories] = useState([]);
+  // const [qty, setQty] = useState("");
+  const [sortBy, setSortBy] = useState({ name: true, asc: true });
   const [formData, setFormData] = useState({
     name: "",
     img: null,
@@ -45,39 +57,180 @@ const ProductList = () => {
     edit: false,
     add: false,
     details: false,
+    deleted: false,
   });
-  const [onSearchText, setSearchText] = useState("");
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemPerPage] = useState(7);
   const [files, setFiles] = useState([]);
+  const { id } = useParams();
 
   // Changing state value when searching name
-  useEffect(() => {
-    if (onSearchText !== "") {
-      const filteredObject = productData.filter((item) => {
-        return item.sku.toLowerCase().includes(onSearchText.toLowerCase());
-      });
-      setData([...filteredObject]);
-    } else {
-      setData([...productData]);
-    }
-  }, [onSearchText]);
+  // useEffect(() => {
+  //   if (onSearchText !== "") {
+  //     const filteredObject = productData.filter((item) => {
+  //       return item.sku.toLowerCase().includes(onSearchText.toLowerCase());
+  //     });
+  //     setData([...filteredObject]);
+  //   } else {
+  //     setData([...productData]);
+  //   }
+  // }, [onSearchText]);
 
   // OnChange function to get the input data
   const onInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // category change
-  const onCategoryChange = (value) => {
-    setFormData({ ...formData, category: value });
+  // GET CATEGORIES
+  const getCategories = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/products/getCategories`);
+      setCategories(response.data);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  // function to close the form modal
-  const onFormCancel = () => {
-    setView({ edit: false, add: false, details: false });
-    resetForm();
+  // GET CART DATA
+  const getCart = async (page) => {
+    try {
+      const response = await axios.get(`${API_URL}/cart/cart-item/${id}`, {
+        name: onSearchText,
+        sortBy,
+        page,
+        perPage: itemPerPage,
+      });
+
+      function selectQty(show) {
+        const { qty, product_id } = show;
+        return { qty, product_id };
+      }
+
+      const item = response.data.map(({ product }) => product);
+      const quantity = response.data.map(selectQty);
+      let tempCartData = [];
+
+      for (let i = 0; i < item.length; i++) {
+        tempCartData.push({
+          ...item[i],
+          ...quantity.find((itmInner) => itmInner.product_id === item[i].id),
+          ...categories.find((itmInner) => itmInner.id === item[i].category_id),
+        });
+      }
+
+      // const tempQty = tempCartData.map(({ qty }) => qty);
+      // console.log(quantity);
+
+      // setQty(tempCartData.map(({ qty }) => qty));
+      setCartData(tempCartData);
+    } catch (error) {
+      console.log(error);
+    }
   };
+
+  console.log(cartData);
+  // console.log(...qty);
+
+  // DELETE CART ITEM
+  const delItem = async (product_id) => {
+    try {
+      // console.log(product_id, user.id);
+      await axios.delete(`${API_URL}/cart/delete-cart-item`, {
+        data: {
+          user_id: user.id,
+          product_id,
+        },
+      });
+      setView({ deleted: true });
+      getCart();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // CLOSING MODAL
+  const onDelete = () => {
+    setView({ deleted: false });
+  };
+
+  // UPDATE QUANTITY
+  const updateQty = async (product_id, e) => {
+    try {
+      // console.log(user.id);
+      await axios.patch(`${API_URL}/cart/update-cart-item`, {
+        product_id: product_id,
+        user_id: user.id,
+        qty: e,
+      });
+      getCart();
+    } catch (error) {
+      console.log(error);
+    }
+
+    //   setCartData((current) =>
+    //     current.map((obj) => {
+    //       console.log({ ...obj });
+    //       if (obj.product_id === id) {
+    //         return { ...obj, update };
+    //       }
+    //       return obj;
+    //     })
+    //   );
+
+    // setQty((prevState) => prevState + 1);
+  };
+
+  // INCREASING QUANTITY
+  const increaseQty = (id) => {
+    setCartData((current) =>
+      current.map((obj) => {
+        if (obj.product_id === id) {
+          // console.log(obj);
+          return { ...obj, qty: obj.qty + 1 };
+        }
+        return obj;
+      })
+    );
+  };
+
+  // DECREASING QUANTITY
+  const decreaseQty = (id) => {
+    // if (qty !== 0) {
+    setCartData((current) =>
+      current.map((obj) => {
+        if (obj.product_id === id) {
+          // console.log(obj);
+          if (obj.qty !== 0) {
+            return { ...obj, qty: obj.qty - 1 };
+          }
+        }
+        return obj;
+      })
+    );
+    // setQty((prevState) => prevState - 1);
+    // }
+  };
+
+  // CONVERT PRICE TO CURRENCY TYPE
+  const toCurrency = (data) => {
+    const locale = new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumSignificantDigits: 3,
+    });
+    return locale.format(data);
+  };
+
+  // GET IMAGE URL
+  const getImageUrl = (image) => {
+    return `${API_URL}/products/${image}`;
+  };
+
+  useEffect(() => {
+    getCart(id);
+    getCategories();
+  }, [onSearchText, sortBy]);
 
   const resetForm = () => {
     setFormData({
@@ -93,90 +246,6 @@ const ProductList = () => {
     reset({});
   };
 
-  const onFormSubmit = (form) => {
-    const { title, price, sku, stock } = form;
-    let submittedData = {
-      id: data.length + 1,
-      name: title,
-      img: files.length > 0 ? files[0].preview : ProductH,
-      sku: sku,
-      price: price,
-      stock: stock,
-      category: formData.category,
-      fav: false,
-      check: false,
-    };
-    setData([submittedData, ...data]);
-    setView({ open: false });
-    setFiles([]);
-    resetForm();
-  };
-
-  const onEditSubmit = () => {
-    let submittedData;
-    let newItems = data;
-    let index = newItems.findIndex((item) => item.id === editId);
-
-    newItems.forEach((item) => {
-      if (item.id === editId) {
-        submittedData = {
-          id: editId,
-          name: formData.name,
-          img: files.length > 0 ? files[0].preview : item.img,
-          sku: formData.sku,
-          price: formData.price,
-          stock: formData.stock,
-          category: formData.category,
-          fav: false,
-          check: false,
-        };
-      }
-    });
-    newItems[index] = submittedData;
-    //setData(newItems);
-    resetForm();
-    setView({ edit: false, add: false });
-  };
-
-  // function that loads the want to editted data
-  const onEditClick = (id) => {
-    data.forEach((item) => {
-      if (item.id === id) {
-        setFormData({
-          name: item.name,
-          img: item.img,
-          sku: item.sku,
-          price: item.price,
-          stock: item.stock,
-          category: item.category,
-          fav: false,
-          check: false,
-        });
-      }
-    });
-    setEditedId(id);
-    setFiles([]);
-    setView({ add: false, edit: true });
-  };
-
-  // selects all the products
-  const selectorCheck = (e) => {
-    let newData;
-    newData = data.map((item) => {
-      item.check = e.currentTarget.checked;
-      return item;
-    });
-    setData([...newData]);
-  };
-
-  // selects one product
-  const onSelectChange = (e, id) => {
-    let newData = data;
-    let index = newData.findIndex((item) => item.id === id);
-    newData[index].check = e.currentTarget.checked;
-    setData([...newData]);
-  };
-
   // onChange function for searching name
   const onFilterChange = (e) => {
     setSearchText(e.target.value);
@@ -184,7 +253,7 @@ const ProductList = () => {
 
   // function to delete a product
   const deleteProduct = (id) => {
-    let defaultData = data;
+    let defaultData = cartData;
     defaultData = defaultData.filter((item) => item.id !== id);
     setData([...defaultData]);
   };
@@ -192,7 +261,7 @@ const ProductList = () => {
   // function to delete the seletected item
   const selectorDeleteProduct = () => {
     let newData;
-    newData = data.filter((item) => item.check !== true);
+    newData = cartData.filter((item) => item.check !== true);
     setData([...newData]);
   };
 
@@ -205,24 +274,16 @@ const ProductList = () => {
     });
   };
 
-  // handles ondrop function of dropzone
-  const handleDropChange = (acceptedFiles) => {
-    setFiles(
-      acceptedFiles.map((file) =>
-        Object.assign(file, {
-          preview: URL.createObjectURL(file),
-        })
-      )
-    );
-  };
-
   // Get current list, pagination
   const indexOfLastItem = currentPage * itemPerPage;
   const indexOfFirstItem = indexOfLastItem - itemPerPage;
-  const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = cartData.slice(indexOfFirstItem, indexOfLastItem);
 
   // Change Page
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    // getProducts(pageNumber);
+  };
 
   const { errors, register, handleSubmit, reset } = useForm();
 
@@ -258,12 +319,12 @@ const ProductList = () => {
                           type="text"
                           className="form-control"
                           id="default-04"
-                          placeholder="Quick search by SKU"
+                          placeholder="Quick search"
                           onChange={(e) => onFilterChange(e)}
                         />
                       </div>
                     </li>
-                    <li>
+                    {/* <li>
                       <UncontrolledDropdown>
                         <DropdownToggle
                           color="transparent"
@@ -291,26 +352,13 @@ const ProductList = () => {
                           </ul>
                         </DropdownMenu>
                       </UncontrolledDropdown>
-                    </li>
+                    </li> */}
                     <li className="nk-block-tools-opt">
-                      <Button
-                        className="toggle btn-icon d-md-none"
-                        color="primary"
-                        onClick={() => {
-                          toggle("add");
-                        }}
-                      >
+                      <Button className="toggle btn-icon d-md-none" color="primary" onClick={() => {}}>
                         <Icon name="plus"></Icon>
                       </Button>
-                      <Button
-                        className="toggle d-none d-md-inline-flex"
-                        color="primary"
-                        onClick={() => {
-                          toggle("add");
-                        }}
-                      >
-                        <Icon name="plus"></Icon>
-                        <span>Add Product</span>
+                      <Button className="toggle d-none d-md-inline-flex" color="primary" onClick={() => {}}>
+                        <span>Checkout</span>
                       </Button>
                     </li>
                   </ul>
@@ -325,7 +373,7 @@ const ProductList = () => {
               <div className="card-inner p-0">
                 <DataTableBody>
                   <DataTableHead>
-                    <DataTableRow className="nk-tb-col-check">
+                    {/* <DataTableRow className="nk-tb-col-check">
                       <div className="custom-control custom-control-sm custom-checkbox notext">
                         <input
                           type="checkbox"
@@ -335,25 +383,25 @@ const ProductList = () => {
                         />
                         <label className="custom-control-label" htmlFor="uid_1"></label>
                       </div>
-                    </DataTableRow>
+                    </DataTableRow> */}
                     <DataTableRow size="sm">
                       <span>Name</span>
                     </DataTableRow>
-                    <DataTableRow>
+                    {/* <DataTableRow>
                       <span>SKU</span>
-                    </DataTableRow>
+                    </DataTableRow> */}
                     <DataTableRow>
                       <span>Price</span>
                     </DataTableRow>
                     <DataTableRow>
-                      <span>Stock</span>
+                      <span>Quantity</span>
                     </DataTableRow>
                     <DataTableRow size="md">
                       <span>Category</span>
                     </DataTableRow>
-                    <DataTableRow size="md">
+                    {/* <DataTableRow size="md">
                       <Icon name="star-round" className="tb-asterisk"></Icon>
-                    </DataTableRow>
+                    </DataTableRow> */}
                     <DataTableRow className="nk-tb-col-tools">
                       <ul className="nk-tb-actions gx-1 my-n1">
                         <li className="mr-n1">
@@ -388,11 +436,11 @@ const ProductList = () => {
                       </ul>
                     </DataTableRow>
                   </DataTableHead>
-                  {currentItems.length > 0
-                    ? currentItems.map((item) => {
+                  {cartData.length > 0
+                    ? cartData.map((item) => {
                         return (
                           <DataTableItem key={item.id}>
-                            <DataTableRow className="nk-tb-col-check">
+                            {/* <DataTableRow className="nk-tb-col-check">
                               <div className="custom-control custom-control-sm custom-checkbox notext">
                                 <input
                                   type="checkbox"
@@ -404,32 +452,55 @@ const ProductList = () => {
                                 />
                                 <label className="custom-control-label" htmlFor={item.id + "uid1"}></label>
                               </div>
-                            </DataTableRow>
+                            </DataTableRow> */}
                             <DataTableRow size="sm">
                               <span className="tb-product">
-                                <img src={item.img ? item.img : ProductH} alt="product" className="thumb" />
+                                <img
+                                  src={item.image ? getImageUrl(item.image) : ProductH}
+                                  alt="product"
+                                  className="thumb"
+                                />
                                 <span className="title">{item.name}</span>
                               </span>
                             </DataTableRow>
-                            <DataTableRow>
+                            {/* <DataTableRow>
                               <span className="tb-sub">{item.sku}</span>
+                            </DataTableRow> */}
+                            <DataTableRow>
+                              <span className="tb-sub">{toCurrency(item.price)}</span>
                             </DataTableRow>
                             <DataTableRow>
-                              <span className="tb-sub">$ {item.price}</span>
-                            </DataTableRow>
-                            <DataTableRow>
-                              <span className="tb-sub">{item.stock}</span>
+                              {/*///////// QUANTITY EDIT ////////*/}
+                              <div className="form-control-wrap number-spinner-wrap w-140px">
+                                <Button
+                                  color="light"
+                                  outline
+                                  className="btn-icon number-spinner-btn number-minus"
+                                  onClick={() => decreaseQty(item.id)}
+                                >
+                                  <Icon name="minus"></Icon>
+                                </Button>
+                                <input
+                                  type="number"
+                                  className="form-control number-spinner"
+                                  value={item.qty}
+                                  onChange={(e) => updateQty(item.id, Number(e.target.value))}
+                                />
+                                <Button
+                                  color="light"
+                                  outline
+                                  className="btn-icon number-spinner-btn number-plus"
+                                  onClick={() => increaseQty(item.id)}
+                                >
+                                  <Icon name="plus"></Icon>
+                                </Button>
+                              </div>
+                              {/* <span className="tb-sub">{item.qty}</span> */}
                             </DataTableRow>
                             <DataTableRow size="md">
-                              <span className="tb-sub">
-                                {item.category.map((cat) => {
-                                  if (item.category[cat] + 1 === null || undefined) {
-                                    return cat.label;
-                                  } else return cat.label + ", ";
-                                })}
-                              </span>
+                              <span className="tb-sub">{item.category}</span>
                             </DataTableRow>
-                            <DataTableRow size="md">
+                            {/* <DataTableRow size="md">
                               <div className="asterisk tb-asterisk">
                                 <a
                                   href="#asterisk"
@@ -440,7 +511,7 @@ const ProductList = () => {
                                   <Icon name="star-fill" className="asterisk-on"></Icon>
                                 </a>
                               </div>
-                            </DataTableRow>
+                            </DataTableRow> */}
                             <DataTableRow className="nk-tb-col-tools">
                               <ul className="nk-tb-actions gx-1 my-n1">
                                 <li className="mr-n1">
@@ -457,29 +528,12 @@ const ProductList = () => {
                                       <ul className="link-list-opt no-bdr">
                                         <li>
                                           <DropdownItem
+                                            style={{ cursor: "pointer" }}
                                             tag="a"
-                                            href="#view"
-                                            onClick={(ev) => {
-                                              ev.preventDefault();
-                                              onEditClick(item.id);
-                                              toggle("details");
-                                            }}
-                                          >
-                                            <Icon name="eye"></Icon>
-                                            <span>View Product</span>
-                                          </DropdownItem>
-                                        </li>
-                                        <li>
-                                          <DropdownItem
-                                            tag="a"
-                                            href="#remove"
-                                            onClick={(ev) => {
-                                              ev.preventDefault();
-                                              deleteProduct(item.id);
-                                            }}
+                                            onClick={() => delItem(item.product_id)}
                                           >
                                             <Icon name="trash"></Icon>
-                                            <span>Remove Product</span>
+                                            <span>Remove Item</span>
                                           </DropdownItem>
                                         </li>
                                       </ul>
@@ -494,10 +548,10 @@ const ProductList = () => {
                     : null}
                 </DataTableBody>
                 <div className="card-inner">
-                  {data.length > 0 ? (
+                  {cartData.length > 0 ? (
                     <PaginationComponent
                       itemPerPage={itemPerPage}
-                      totalItems={data.length}
+                      totalItems={cartData.length}
                       paginate={paginate}
                       currentPage={currentPage}
                     />
@@ -512,7 +566,7 @@ const ProductList = () => {
           </Card>
         </Block>
 
-        <Modal isOpen={view.edit} toggle={() => onFormCancel()} className="modal-dialog-centered" size="lg">
+        {/* <Modal isOpen={view.edit} toggle={() => onFormCancel()} className="modal-dialog-centered" size="lg">
           <ModalBody>
             <a href="#cancel" className="close">
               {" "}
@@ -681,9 +735,9 @@ const ProductList = () => {
               </div>
             </div>
           </ModalBody>
-        </Modal>
+        </Modal> */}
 
-        <Modal isOpen={view.details} toggle={() => onFormCancel()} className="modal-dialog-centered" size="lg">
+        {/* <Modal isOpen={view.details} toggle={() => onFormCancel()} className="modal-dialog-centered" size="lg">
           <ModalBody>
             <a href="#cancel" className="close">
               {" "}
@@ -728,9 +782,9 @@ const ProductList = () => {
               </Row>
             </div>
           </ModalBody>
-        </Modal>
+        </Modal> */}
 
-        <SimpleBar
+        {/* <SimpleBar
           className={`nk-add-product toggle-slide toggle-slide-right toggle-screen-any ${
             view.add ? "content-active" : ""
           }`}
@@ -888,12 +942,19 @@ const ProductList = () => {
               </Row>
             </form>
           </Block>
-        </SimpleBar>
+        </SimpleBar> */}
 
-        {view.add && <div className="toggle-overlay" onClick={toggle}></div>}
+        {/* {view.add && <div className="toggle-overlay" onClick={toggle}></div>} */}
+        <Modal isOpen={view.deleted} toggle={() => onDelete()} className="modal-dialog-centered" size="sm">
+          <ModalBody>
+            <div className="nk-modal-head">
+              <h3 className="caption-text center">Item removed</h3>
+            </div>
+          </ModalBody>
+        </Modal>
       </Content>
     </React.Fragment>
   );
 };
 
-export default ProductList;
+export default CartList;

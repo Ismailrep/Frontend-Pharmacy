@@ -16,7 +16,7 @@ import {
   PaginationComponent,
 } from "../../../components/Component";
 import { useForm } from "react-hook-form";
-import { Card, DropdownItem, UncontrolledDropdown, DropdownMenu, DropdownToggle, Badge } from "reactstrap";
+import { Card, Modal, ModalBody } from "reactstrap";
 import axios from "axios";
 import { API_URL } from "../../../constants/API";
 import { productData, unitOptions } from "../../panel/e-commerce/product/ProductData";
@@ -42,6 +42,7 @@ const ProductCard = () => {
     add: false,
     category: false,
     details: false,
+    addItem: false,
   });
   const [filter, setFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -56,6 +57,8 @@ const ProductCard = () => {
   const [onSearchText, setSearchText] = useState("");
   const [categoryId, setCategoryId] = useState(null);
   const [sortBy, setSortBy] = useState({ name: true, asc: true });
+  const user = JSON.parse(window.localStorage.getItem("profile"));
+  const [productId, setProductId] = useState("");
 
   // CONVERT PRICE TO CURRENCY TYPE
   const toCurrency = (data) => {
@@ -105,6 +108,16 @@ const ProductCard = () => {
     }
   };
 
+  // ADD ITEM TO CART
+  const addToCart = async (product_id) => {
+    await axios.post(`${API_URL}/cart/add-to-cart`, {
+      product_id,
+      user_id: user.id,
+      qty: 1,
+    });
+    setView({ addItem: true });
+  };
+
   useEffect(() => {
     getCategories();
     getProducts(1);
@@ -132,28 +145,20 @@ const ProductCard = () => {
     setSearchText(e.target.value);
   };
 
-  // handles ondrop function of dropzone
-  const handleDropChange = (acceptedFiles) => {
-    setFiles(
-      acceptedFiles.map((file) =>
-        Object.assign(file, {
-          preview: URL.createObjectURL(file),
-        })
-      )
-    );
-  };
-
   // Get current list, pagination
   const indexOfLastItem = currentPage * itemPerPage;
   const indexOfFirstItem = indexOfLastItem - itemPerPage;
   const currentItems = products.slice(indexOfFirstItem, indexOfLastItem);
 
-  // console.log("productCount:", productCount);
-
   // Change Page
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
     getProducts(pageNumber);
+  };
+
+  // Closing Modal
+  const onAddedToCart = () => {
+    setView({ addItem: false });
   };
 
   const { errors, register, handleSubmit, reset } = useForm();
@@ -251,34 +256,18 @@ const ProductCard = () => {
                         <Link to={`${process.env.PUBLIC_URL}/product-details/${item.id}`}>
                           <img
                             className="card-img-top"
-                            style={{ maxHeight: "400px" }}
+                            style={{ maxHeight: "450px", objectFit: "cover" }}
                             src={getImageUrl(item.image)}
                             alt=""
                           />
                         </Link>
-                        <ul className="product-badges">
-                          {/* {item.new && (
-                            <li>
-                              <Badge color="success">New</Badge>
-                            </li>
-                          )}
-                          {item.hot && (
-                            <li>
-                              <Badge color="danger">New</Badge>
-                            </li>
-                          )} */}
-                        </ul>
+                        <ul className="product-badges"></ul>
                         <ul className="product-actions">
                           <li>
-                            <a href={`/add-to-cart/${item.id}`} onClick={(ev) => ev.preventDefault()}>
+                            <a style={{ cursor: "pointer" }} onClick={() => addToCart(item.id)}>
                               <Icon name="cart"></Icon>
                             </a>
                           </li>
-                          {/* <li>
-                            <a href="#like" onClick={(ev) => ev.preventDefault()}>
-                              <Icon name="heart"></Icon>
-                            </a>
-                          </li> */}
                         </ul>
                       </div>
                       <div className="card-inner text-center">
@@ -290,10 +279,7 @@ const ProductCard = () => {
                         <h5 className="product-title">
                           <Link to={`${process.env.PUBLIC_URL}/product-details/${item.id}`}>{item.title}</Link>
                         </h5>
-                        <div className="product-price text-primary h5">
-                          {/* <small className="text-muted del fs-13px">IDR{item.prevPrice}</small> */}{" "}
-                          {toCurrency(item.price)}
-                        </div>
+                        <div className="product-price text-primary h5">{toCurrency(item.price)}</div>
                       </div>
                     </Card>
                   </Col>
@@ -314,6 +300,13 @@ const ProductCard = () => {
             </div>
           )}
         </Block>
+        <Modal isOpen={view.addItem} toggle={() => onAddedToCart()} className="modal-dialog-centered" size="sm">
+          <ModalBody>
+            <div className="nk-modal-head">
+              <h3 className="caption-text center">Added to cart</h3>
+            </div>
+          </ModalBody>
+        </Modal>
       </Content>
     </React.Fragment>
   );
