@@ -12,7 +12,7 @@ import {
   Icon,
   Block,
 } from "../../../components/Component";
-import { Badge, Card } from "reactstrap";
+import { Badge, Card, Modal, ModalBody } from "reactstrap";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import { API_URL } from "../../../constants/API";
@@ -21,7 +21,11 @@ const ProductDetails = () => {
   const [counter, setCounter] = useState(1);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState("");
+  const [view, setView] = useState({
+    addItem: false,
+  });
   const { id } = useParams();
+  const user = JSON.parse(window.localStorage.getItem("profile"));
 
   // CONVERT PRICE TO CURRENCY TYPE
   const toCurrency = (data) => {
@@ -35,7 +39,7 @@ const ProductDetails = () => {
 
   // GET IMAGE URL
   const getImageUrl = (image) => {
-    console.log(image);
+    // console.log(image);
     return `${API_URL}/products/${image}`;
   };
 
@@ -45,7 +49,7 @@ const ProductDetails = () => {
       const response = await axios.get(`${API_URL}/products/getProductsById/${id}`);
 
       setProducts(response.data);
-      console.log(response.data);
+      // console.log(response.data);
     } catch (error) {
       console.log(error);
     }
@@ -55,6 +59,15 @@ const ProductDetails = () => {
   const getCategories = async () => {
     const response = await axios.get(`${API_URL}/products/getCategories`);
     setCategories(response.data);
+  };
+
+  const addToCart = async () => {
+    await axios.post(`${API_URL}/cart/add-to-cart`, {
+      product_id: id,
+      user_id: user.id,
+      qty: counter,
+    });
+    setView({ addItem: true });
   };
 
   useEffect(() => {
@@ -74,6 +87,12 @@ const ProductDetails = () => {
     }
   };
 
+  // Closing Modal
+  const onAddedToCart = () => {
+    setView({ addItem: false });
+  };
+
+  // console.log(counter);
   return (
     <React.Fragment>
       <Head title="Product Detail"></Head>
@@ -188,7 +207,11 @@ const ProductDetails = () => {
                           </div>
                         </li>
                         <li>
-                          <Button color="primary">Add to Cart</Button>
+                          {/* <Link to={`/add-to-cart`}> */}
+                          <Button onClick={() => addToCart()} color="primary">
+                            Add to Cart
+                          </Button>
+                          {/* </Link> */}
                         </li>
                         <li className="ml-n1">
                           <Button className="btn-icon btn-trigger text-primary">
@@ -203,6 +226,13 @@ const ProductDetails = () => {
             </div>
           </Card>
         </Block>
+        <Modal isOpen={view.addItem} toggle={() => onAddedToCart()} className="modal-dialog-centered" size="sm">
+          <ModalBody>
+            <div className="nk-modal-head">
+              <h3 className="caption-text center">Added to cart</h3>
+            </div>
+          </ModalBody>
+        </Modal>
       </Content>
     </React.Fragment>
   );

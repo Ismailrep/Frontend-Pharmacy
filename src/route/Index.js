@@ -131,7 +131,7 @@ const Pages = () => {
         <Route exact path={`/user/transaction-list`} component={Transaction}></Route>
 
         {/* Cart */}
-        <Route exact path={`/cart`} component={Cart}></Route>
+        <Route exact path={`/cart-item/:id`} component={Cart}></Route>
 
         {/*Panel */}
         <Route exact path={`/admin`} component={EcomDashboard}></Route>
