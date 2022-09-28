@@ -77,11 +77,6 @@ const CartList = () => {
   //   }
   // }, [onSearchText]);
 
-  // OnChange function to get the input data
-  const onInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
   // GET CATEGORIES
   const getCategories = async () => {
     try {
@@ -102,35 +97,28 @@ const CartList = () => {
         perPage: itemPerPage,
       });
 
-      function selectQty(show) {
-        const { qty, product_id } = show;
-        return { qty, product_id };
-      }
+      const tempCart = [];
 
-      const item = response.data.map(({ product }) => product);
-      const quantity = response.data.map(selectQty);
-      let tempCartData = [];
-
-      for (let i = 0; i < item.length; i++) {
-        tempCartData.push({
-          ...item[i],
-          ...quantity.find((itmInner) => itmInner.product_id === item[i].id),
-          ...categories.find((itmInner) => itmInner.id === item[i].category_id),
+      for (let item of response.data) {
+        tempCart.push({
+          id: item.product.id,
+          name: item.product.name,
+          image: item.product.image,
+          price: item.product.price,
+          qty: item.qty,
+          category: item.product.category.category,
+          unit: item.product.unit,
         });
+        // console.log(tempCart);
       }
 
-      // const tempQty = tempCartData.map(({ qty }) => qty);
-      // console.log(quantity);
-
-      // setQty(tempCartData.map(({ qty }) => qty));
-      setCartData(tempCartData);
+      setCartData(tempCart);
     } catch (error) {
       console.log(error);
     }
   };
 
   console.log(cartData);
-  // console.log(...qty);
 
   // DELETE CART ITEM
   const delItem = async (product_id) => {
@@ -157,36 +145,23 @@ const CartList = () => {
   // UPDATE QUANTITY
   const updateQty = async (product_id, e) => {
     try {
-      // console.log(user.id);
       await axios.patch(`${API_URL}/cart/update-cart-item`, {
         product_id: product_id,
         user_id: user.id,
         qty: e,
       });
-      getCart();
     } catch (error) {
       console.log(error);
     }
-
-    //   setCartData((current) =>
-    //     current.map((obj) => {
-    //       console.log({ ...obj });
-    //       if (obj.product_id === id) {
-    //         return { ...obj, update };
-    //       }
-    //       return obj;
-    //     })
-    //   );
-
-    // setQty((prevState) => prevState + 1);
+    getCart();
   };
 
   // INCREASING QUANTITY
   const increaseQty = (id) => {
     setCartData((current) =>
       current.map((obj) => {
-        if (obj.product_id === id) {
-          // console.log(obj);
+        if (obj.id === id) {
+          updateQty(obj.id, obj.qty + 1);
           return { ...obj, qty: obj.qty + 1 };
         }
         return obj;
@@ -196,20 +171,33 @@ const CartList = () => {
 
   // DECREASING QUANTITY
   const decreaseQty = (id) => {
-    // if (qty !== 0) {
     setCartData((current) =>
       current.map((obj) => {
-        if (obj.product_id === id) {
+        if (obj.id === id) {
           // console.log(obj);
           if (obj.qty !== 0) {
+            updateQty(obj.id, obj.qty - 1);
             return { ...obj, qty: obj.qty - 1 };
+          } else if (obj.qty === 1) {
+            // delItem(obj.id);
           }
         }
         return obj;
       })
     );
-    // setQty((prevState) => prevState - 1);
-    // }
+  };
+
+  // GET TOTAL PRICE
+  const totalPrice = () => {
+    let pricesArr = cartData.map(({ price }) => price);
+    let qtyArr = cartData.map(({ qty }) => qty);
+
+    let priceTotal = 0;
+    for (let i = 0; i < pricesArr.length; i++) {
+      priceTotal += pricesArr[i] * qtyArr[i];
+    }
+
+    return priceTotal;
   };
 
   // CONVERT PRICE TO CURRENCY TYPE
@@ -230,32 +218,12 @@ const CartList = () => {
   useEffect(() => {
     getCart(id);
     getCategories();
+    totalPrice();
   }, [onSearchText, sortBy]);
-
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      img: null,
-      sku: "",
-      price: 0,
-      stock: 0,
-      category: [],
-      fav: false,
-      check: false,
-    });
-    reset({});
-  };
 
   // onChange function for searching name
   const onFilterChange = (e) => {
     setSearchText(e.target.value);
-  };
-
-  // function to delete a product
-  const deleteProduct = (id) => {
-    let defaultData = cartData;
-    defaultData = defaultData.filter((item) => item.id !== id);
-    setData([...defaultData]);
   };
 
   // function to delete the seletected item
@@ -282,7 +250,7 @@ const CartList = () => {
   // Change Page
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
-    // getProducts(pageNumber);
+    getCart(pageNumber);
   };
 
   const { errors, register, handleSubmit, reset } = useForm();
@@ -396,6 +364,9 @@ const CartList = () => {
                     <DataTableRow>
                       <span>Quantity</span>
                     </DataTableRow>
+                    <DataTableRow>
+                      <span>Unit</span>
+                    </DataTableRow>
                     <DataTableRow size="md">
                       <span>Category</span>
                     </DataTableRow>
@@ -403,7 +374,7 @@ const CartList = () => {
                       <Icon name="star-round" className="tb-asterisk"></Icon>
                     </DataTableRow> */}
                     <DataTableRow className="nk-tb-col-tools">
-                      <ul className="nk-tb-actions gx-1 my-n1">
+                      {/* <ul className="nk-tb-actions gx-1 my-n1">
                         <li className="mr-n1">
                           <UncontrolledDropdown>
                             <DropdownToggle
@@ -433,11 +404,12 @@ const CartList = () => {
                             </DropdownMenu>
                           </UncontrolledDropdown>
                         </li>
-                      </ul>
+                      </ul> */}
                     </DataTableRow>
                   </DataTableHead>
-                  {cartData.length > 0
-                    ? cartData.map((item) => {
+                  {currentItems.length > 0
+                    ? currentItems.map((item) => {
+                        // console.log(item);
                         return (
                           <DataTableItem key={item.id}>
                             {/* <DataTableRow className="nk-tb-col-check">
@@ -467,35 +439,51 @@ const CartList = () => {
                               <span className="tb-sub">{item.sku}</span>
                             </DataTableRow> */}
                             <DataTableRow>
-                              <span className="tb-sub">{toCurrency(item.price)}</span>
+                              <span className="tb-sub">{toCurrency(item.price * item.qty)}</span>
                             </DataTableRow>
                             <DataTableRow>
                               {/*///////// QUANTITY EDIT ////////*/}
                               <div className="form-control-wrap number-spinner-wrap w-140px">
-                                <Button
-                                  color="light"
+                                <button
+                                  style={{
+                                    borderRadius: "7px",
+                                    border: "none",
+                                    padding: "7px",
+                                    backgroundColor: "",
+                                  }}
+                                  type="button"
                                   outline
                                   className="btn-icon number-spinner-btn number-minus"
+                                  disabled={item.qty === 1 ? true : false}
                                   onClick={() => decreaseQty(item.id)}
                                 >
                                   <Icon name="minus"></Icon>
-                                </Button>
+                                </button>
                                 <input
                                   type="number"
+                                  style={{ borderColor: "white", backgroundColor: "transparent" }}
                                   className="form-control number-spinner"
                                   value={item.qty}
                                   onChange={(e) => updateQty(item.id, Number(e.target.value))}
                                 />
-                                <Button
-                                  color="light"
-                                  outline
+                                <button
+                                  style={{
+                                    borderRadius: "7px",
+                                    border: "none",
+                                    padding: "7px",
+                                    backgroundColor: "",
+                                  }}
+                                  type="button"
                                   className="btn-icon number-spinner-btn number-plus"
                                   onClick={() => increaseQty(item.id)}
                                 >
                                   <Icon name="plus"></Icon>
-                                </Button>
+                                </button>
                               </div>
                               {/* <span className="tb-sub">{item.qty}</span> */}
+                            </DataTableRow>
+                            <DataTableRow size="md">
+                              <span className="tb-sub">{item.unit}</span>
                             </DataTableRow>
                             <DataTableRow size="md">
                               <span className="tb-sub">{item.category}</span>
@@ -530,7 +518,7 @@ const CartList = () => {
                                           <DropdownItem
                                             style={{ cursor: "pointer" }}
                                             tag="a"
-                                            onClick={() => delItem(item.product_id)}
+                                            onClick={() => delItem(item.id)}
                                           >
                                             <Icon name="trash"></Icon>
                                             <span>Remove Item</span>
@@ -547,8 +535,12 @@ const CartList = () => {
                       })
                     : null}
                 </DataTableBody>
+                <div style={{ fontWeight: "bold", textAlign: "center", marginTop: "20px" }}>
+                  <div>PRICE TOTAL:</div>
+                  <div style={{ fontSize: "large" }}>{toCurrency(totalPrice())}</div>
+                </div>
                 <div className="card-inner">
-                  {cartData.length > 0 ? (
+                  {currentItems.length > 0 ? (
                     <PaginationComponent
                       itemPerPage={itemPerPage}
                       totalItems={cartData.length}
