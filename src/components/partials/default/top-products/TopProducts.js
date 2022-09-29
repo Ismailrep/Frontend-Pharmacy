@@ -1,27 +1,34 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Card, DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown } from "reactstrap";
-import { productData, productDataSet2, productDataSet3, productDataSet4 } from "./ProductData";
+import { Card } from "reactstrap";
+import { API_URL } from "../../../../constants/API";
 
 const TopProducts = () => {
-  const [data, setData] = useState("Weekly");
-  const [dataSet, setDataSet] = useState(productData);
+  const [topProducts, setTopProducts] = useState([]);
+
+  // GET TOP 5 MOST SOLD PRODUCTS
+  const getTopProducts = async (req, res) => {
+    try {
+      const response = await axios.get(`${API_URL}/report/getTopProducts`);
+      setTopProducts(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // CONVERT PRICE TO CURRENCY TYPE
+  const toCurrency = (data) => {
+    const locale = new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumSignificantDigits: 9,
+    });
+    return locale.format(data);
+  };
 
   useEffect(() => {
-    let object;
-    if (data === "Daily") {
-      object = productDataSet2;
-    } else if (data === "Monthly") {
-      object = productDataSet3;
-    } else {
-      object = productDataSet4;
-    }
-    setDataSet(object);
-  }, [data]);
-
-  const returnTotal = (n1, n2) => {
-    var result = n1 * Number(n2);
-    return result.toFixed(2);
-  };
+    getTopProducts();
+  }, []);
 
   return (
     <Card className="h-100">
@@ -30,72 +37,20 @@ const TopProducts = () => {
           <div className="card-title">
             <h6 className="title">Top products</h6>
           </div>
-          <div className="card-tools">
-            <UncontrolledDropdown>
-              <DropdownToggle
-                tag="a"
-                href="#toggle"
-                onClick={(ev) => ev.preventDefault()}
-                className="link link-light link-sm dropdown-indicator"
-              >
-                {data}
-              </DropdownToggle>
-              <DropdownMenu right className="dropdown-menu-sm">
-                <ul className="link-list-opt no-bdr">
-                  <li className={data === "Daily" ? "active" : ""}>
-                    <DropdownItem
-                      tag="a"
-                      href="#dropdown"
-                      onClick={(ev) => {
-                        ev.preventDefault();
-                        setData("Daily");
-                      }}
-                    >
-                      <span>Daily</span>
-                    </DropdownItem>
-                  </li>
-                  <li className={data === "Weekly" ? "active" : ""}>
-                    <DropdownItem
-                      tag="a"
-                      href="#dropdown"
-                      onClick={(ev) => {
-                        ev.preventDefault();
-                        setData("Weekly");
-                      }}
-                    >
-                      <span>Weekly</span>
-                    </DropdownItem>
-                  </li>
-                  <li className={data === "Monthly" ? "active" : ""}>
-                    <DropdownItem
-                      tag="a"
-                      href="#dropdown"
-                      onClick={(ev) => {
-                        ev.preventDefault();
-                        setData("Monthly");
-                      }}
-                    >
-                      <span>Monthly</span>
-                    </DropdownItem>
-                  </li>
-                </ul>
-              </DropdownMenu>
-            </UncontrolledDropdown>
-          </div>
         </div>
         <ul className="nk-top-products">
-          {dataSet.map((item, idx) => (
-            <li className="item" key={idx}>
+          {topProducts.map((item) => (
+            <li className="item" key={item.id}>
               <div className="thumb">
-                <img src={item.img} alt="" />
+                <img src={`${API_URL}/products/${item.product.image}`} alt="product" />
               </div>
               <div className="info">
-                <div className="title">{item.name}</div>
-                <div className="price">${item.price}</div>
+                <div className="title">{item.product.name}</div>
+                <div className="price">{toCurrency(item.product.price)}</div>
               </div>
               <div className="total">
-                <div className="amount">$ {returnTotal(item.price, item.sold)}</div>
-                <div className="count">{item.sold} Sold</div>
+                <div className="amount">{item.count} Sold</div>
+                {/* <div className="count">{toCurrency(item.total_price)}</div> */}
               </div>
             </li>
           ))}
