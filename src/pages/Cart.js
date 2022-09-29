@@ -34,13 +34,9 @@ const CartList = () => {
   const user = JSON.parse(window.localStorage.getItem("profile"));
   const [cartData, setCartData] = useState([]);
   const [data, setData] = useState(cartData);
-  const [products, setProducts] = useState([]);
-  const [cartItem, setCartItem] = useState([]);
   const [sm, updateSm] = useState(false);
   const [onSearchText, setSearchText] = useState("");
-  const [categoryId, setCategoryId] = useState(null);
   const [categories, setCategories] = useState([]);
-  // const [qty, setQty] = useState("");
   const [sortBy, setSortBy] = useState({ name: true, asc: true });
   const [formData, setFormData] = useState({
     name: "",
@@ -64,18 +60,6 @@ const CartList = () => {
   const [itemPerPage] = useState(7);
   const [files, setFiles] = useState([]);
   const { id } = useParams();
-
-  // Changing state value when searching name
-  // useEffect(() => {
-  //   if (onSearchText !== "") {
-  //     const filteredObject = productData.filter((item) => {
-  //       return item.sku.toLowerCase().includes(onSearchText.toLowerCase());
-  //     });
-  //     setData([...filteredObject]);
-  //   } else {
-  //     setData([...productData]);
-  //   }
-  // }, [onSearchText]);
 
   // GET CATEGORIES
   const getCategories = async () => {
@@ -112,11 +96,30 @@ const CartList = () => {
         // console.log(tempCart);
       }
 
-      setCartData(tempCart);
+      setCartData(tempCart.reverse());
     } catch (error) {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    getCart(id);
+    getCategories();
+    totalPrice();
+  }, [onSearchText, sortBy]);
+
+  // Changing state value when searching name
+  useEffect(() => {
+    if (onSearchText !== "") {
+      const filteredObject = cartData.filter((item) => {
+        return item.name.toLowerCase().includes(onSearchText.toLowerCase());
+      });
+      setCartData([...filteredObject]);
+      console.log(filteredObject);
+    } else {
+      setCartData([...cartData]);
+    }
+  }, [onSearchText]);
 
   console.log(cartData);
 
@@ -215,31 +218,9 @@ const CartList = () => {
     return `${API_URL}/products/${image}`;
   };
 
-  useEffect(() => {
-    getCart(id);
-    getCategories();
-    totalPrice();
-  }, [onSearchText, sortBy]);
-
   // onChange function for searching name
   const onFilterChange = (e) => {
     setSearchText(e.target.value);
-  };
-
-  // function to delete the seletected item
-  const selectorDeleteProduct = () => {
-    let newData;
-    newData = cartData.filter((item) => item.check !== true);
-    setData([...newData]);
-  };
-
-  // toggle function to view product details
-  const toggle = (type) => {
-    setView({
-      edit: type === "edit" ? true : false,
-      add: type === "add" ? true : false,
-      details: type === "details" ? true : false,
-    });
   };
 
   // Get current list, pagination
@@ -253,7 +234,7 @@ const CartList = () => {
     getCart(pageNumber);
   };
 
-  const { errors, register, handleSubmit, reset } = useForm();
+  // const { errors, register, handleSubmit, reset } = useForm();
 
   return (
     <React.Fragment>
@@ -278,7 +259,7 @@ const CartList = () => {
                 </a>
                 <div className="toggle-expand-content" style={{ display: sm ? "block" : "none" }}>
                   <ul className="nk-block-tools g-3">
-                    <li>
+                    {/* <li>
                       <div className="form-control-wrap">
                         <div className="form-icon form-icon-right">
                           <Icon name="search"></Icon>
@@ -291,7 +272,7 @@ const CartList = () => {
                           onChange={(e) => onFilterChange(e)}
                         />
                       </div>
-                    </li>
+                    </li> */}
                     {/* <li>
                       <UncontrolledDropdown>
                         <DropdownToggle
@@ -452,7 +433,6 @@ const CartList = () => {
                                     backgroundColor: "",
                                   }}
                                   type="button"
-                                  outline
                                   className="btn-icon number-spinner-btn number-minus"
                                   disabled={item.qty === 1 ? true : false}
                                   onClick={() => decreaseQty(item.id)}

@@ -6,6 +6,7 @@ import UserAvatar from "../../../user/UserAvatar";
 import { DataTableBody, DataTableHead, DataTableItem, DataTableRow } from "../../../table/DataTable";
 
 const TransactionTable = () => {
+  const user = JSON.parse(window.localStorage.getItem("profile"));
   const [data, setData] = useState(transactionData);
   const [trans, setTrans] = useState("");
   useEffect(() => {

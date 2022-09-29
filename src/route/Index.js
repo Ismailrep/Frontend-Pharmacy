@@ -129,7 +129,7 @@ const Pages = () => {
     <Suspense fallback={<div />}>
       <Switch>
         {/* Transaction */}
-        <Route exact path={`/user/transaction-list`} component={Transaction}></Route>
+        <Route exact path={`/user/transaction-list/:id`} component={Transaction}></Route>
 
         {/* Cart */}
         <Route exact path={`/cart-item/:id`} component={Cart}></Route>

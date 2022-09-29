@@ -8,10 +8,12 @@ import { Link } from "react-router-dom";
 import Transaction from "../../../../images/transaction.png";
 
 const TransactionDropdown = () => {
+  const user = JSON.parse(window.localStorage.getItem("profile"));
+
   return (
     <Link
       className="nk-quick-nav-icon icon-status icon-status-na"
-      to={`${process.env.PUBLIC_URL}/user/transaction-list`}
+      to={`${process.env.PUBLIC_URL}/user/transaction-list/${user.id}`}
     >
       <img style={{ maxHeight: "24px", marginTop: "1px" }} src={Transaction} alt="" />
     </Link>

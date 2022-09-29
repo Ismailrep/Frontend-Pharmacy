@@ -10,11 +10,11 @@ const ChatDropdown = () => {
   const user = JSON.parse(window.localStorage.getItem("profile"));
 
   return (
-    // <div className="icon-status nk-quick-nav-icon icon-status-na">
-    <Link className="icon-status nk-quick-nav-icon icon-status-na" to={`/cart-item/${user.id}`}>
-      <Icon name="cart"></Icon>
-    </Link>
-    // </div>
+    <div className="icon-status nk-quick-nav-icon icon-status-na">
+      <Link className="icon-status nk-quick-nav-icon icon-status-na" to={`/cart-item/${user.id}`}>
+        <Icon name="cart"></Icon>
+      </Link>
+    </div>
   );
   // <UncontrolledDropdown>
   {
