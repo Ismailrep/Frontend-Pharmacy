@@ -119,6 +119,7 @@ import InvoiceDetailsAdm from "../pages/pre-built/invoice/InvoiceDetailsAdm";
 import Transaction from "../pages/pre-built/transaction/TransactionList";
 import UserTransactions from "../pages/pre-built/invoice/userTransactions";
 import AdminList from "../pages/panel/e-commerce/customer/AdminList";
+import CartList from "../pages/Cart";
 
 const Pages = () => {
   useLayoutEffect(() => {
@@ -133,6 +134,7 @@ const Pages = () => {
 
         {/* Cart */}
         <Route exact path={`/cart`} component={Cart}></Route>
+        <Route exact path={`/cart-item/:id`} component={CartList}></Route>
 
         {/*Panel */}
         <Route exact path={`/admin`} component={EcomDashboard}></Route>
