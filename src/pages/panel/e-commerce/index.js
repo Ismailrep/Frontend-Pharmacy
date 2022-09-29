@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import Content from "../../../layout/content/Content";
 import Head from "../../../layout/head/Head";
@@ -13,9 +13,49 @@ import StoreStatistics from "../../../components/partials/default/StoreStatistic
 import TrafficSources from "../../../components/partials/e-commerce/traffic-sources/TrafficSources";
 import StoreVisitors from "../../../components/partials/e-commerce/store-visitors/StoreVisitors";
 import { Redirect } from "react-router";
+import axios from "axios";
+import moment from "moment";
+import { API_URL } from "../../../constants/API";
 
 const Dashboard = () => {
   const admin = useSelector((state) => state.admin);
+  const [revenue, setRevenue] = useState({});
+  const [itemSold, setItemSold] = useState(0);
+
+  // GET REVENUE
+  const getRevenue = async () => {
+    try {
+      const response = await axios.post(`${API_URL}/report/getRevenue`, {
+        week: getCurrent("isoWeek"),
+        lastWeek: getLast("weeks", "isoWeek"),
+        thisMonth: getCurrent("month"),
+        lastMonth: getLast("month", "month"),
+      });
+
+      let sold = 0;
+      await response.data.itemSold.forEach((element) => {
+        sold += +element.sold;
+      });
+      setRevenue(response.data);
+      setItemSold(sold);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getCurrent = (type) => {
+    return moment().startOf(type).format("YYYY-MM-DD");
+  };
+
+  const getLast = (subtract, type) => {
+    const startDate = moment().subtract(1, subtract).startOf(type).format("YYYY-MM-DD");
+    const endDate = moment().subtract(1, subtract).endOf(type).format("YYYY-MM-DD");
+    return [startDate, endDate];
+  };
+
+  useEffect(() => {
+    getRevenue();
+  }, []);
 
   if (!admin.id) {
     return <Redirect to={"/"} />;
@@ -36,10 +76,10 @@ const Dashboard = () => {
         <Block>
           <Row className="g-gs">
             <Col xxl="4" md="6">
-              <TotalSales />
+              <TotalSales revenue={revenue} />
             </Col>
             <Col xxl="4" md="6">
-              <AverageOrder />
+              <AverageOrder revenue={revenue} />
             </Col>
             <Col xxl="4">
               <Row className="g-gs">

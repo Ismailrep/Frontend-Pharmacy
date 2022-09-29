@@ -35,12 +35,12 @@ const Header = ({ fixed, theme, className, setVisibility, ...props }) => {
           <div className={`nk-header-brand mr-3 ${window.location.pathname.includes("admin") && "d-xl-none"}`}>
             <Logo />
           </div>
-          <div className="nk-header-search ml-3 ml-xl-0">
+          <div className={`nk-header-search ml-3 ml-xl-0`}>
             <HeaderSearch />
           </div>
           <div className="nk-header-tools">
             <ul className="nk-quick-nav">
-              {admin.id || user ? (
+              {user ? (
                 <>
                   <li className="cart-fill hide-mb-xs" onClick={() => setVisibility(false)}>
                     <CartDropdown />

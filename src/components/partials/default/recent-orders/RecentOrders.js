@@ -1,9 +1,80 @@
+import axios from "axios";
+import moment from "moment";
 import React from "react";
+import { useState } from "react";
+import { useEffect } from "react";
 import { Card } from "reactstrap";
+import { API_URL } from "../../../../constants/API";
 import { DataTableHead, DataTableRow, DataTableItem, UserAvatar } from "../../../Component";
 import { recentOrderData } from "./OrderData";
 
 const RecentOrders = () => {
+  const [recentOrder, setRecentOrder] = useState([]);
+
+  // GET 5 RECENT ORDER
+  const getRecentOrder = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/report/getRecentOrder`);
+      setRecentOrder(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // CONVERT PRICE TO CURRENCY TYPE
+  const toCurrency = (data) => {
+    const locale = new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumSignificantDigits: 9,
+    });
+    return locale.format(data);
+  };
+
+  // RENDER RECENT ORDER
+  const renderRecentOrder = () => {
+    return recentOrder.map((item) => (
+      <DataTableItem key={item.id}>
+        <DataTableRow>
+          <span className="tb-lead">
+            <a href="#order" onClick={(ev) => ev.preventDefault()}>
+              {item.invoice_id}
+            </a>
+          </span>
+        </DataTableRow>
+        <DataTableRow size="sm">
+          <div className="user-card">
+            {/* <UserAvatar className="sm" theme={item.theme} text={item.initial} image={item.img}></UserAvatar> */}
+            <div className="user-name">
+              <span className="tb-lead">
+                {item.user.first_name} {item.user.last_name}
+              </span>
+            </div>
+          </div>
+        </DataTableRow>
+        <DataTableRow size="md">
+          <span className="tb-sub">{moment(item.createdAt).format("MMM Do, YYYY")}</span>
+        </DataTableRow>
+        <DataTableRow>
+          <span className="tb-sub tb-amount">{toCurrency(item.grand_total)}</span>
+        </DataTableRow>
+        <DataTableRow>
+          <span
+            className={`badge badge-dot badge-dot-xs badge-${
+              item.status === "Paid" ? "success" : item.status === "Rejected" ? "danger" : "warning"
+            }`}
+          >
+            {item.status}
+          </span>
+        </DataTableRow>
+      </DataTableItem>
+    ));
+  };
+
+  useEffect(() => {
+    getRecentOrder();
+  }, []);
+
   return (
     <Card className="card-full">
       <div className="card-inner">
@@ -16,7 +87,7 @@ const RecentOrders = () => {
       <div className="nk-tb-list mt-n2">
         <DataTableHead>
           <DataTableRow>
-            <span>Order No.</span>
+            <span>Invoice Id</span>
           </DataTableRow>
           <DataTableRow size="sm">
             <span>Customer</span>
@@ -31,42 +102,7 @@ const RecentOrders = () => {
             <span className="d-none d-sm-inline">Status</span>
           </DataTableRow>
         </DataTableHead>
-        {recentOrderData.map((item, idx) => (
-          <DataTableItem key={idx}>
-            <DataTableRow>
-              <span className="tb-lead">
-                <a href="#order" onClick={(ev) => ev.preventDefault()}>
-                  {item.order}
-                </a>
-              </span>
-            </DataTableRow>
-            <DataTableRow size="sm">
-              <div className="user-card">
-                <UserAvatar className="sm" theme={item.theme} text={item.initial} image={item.img}></UserAvatar>
-                <div className="user-name">
-                  <span className="tb-lead">{item.name}</span>
-                </div>
-              </div>
-            </DataTableRow>
-            <DataTableRow size="md">
-              <span className="tb-sub">{item.date}</span>
-            </DataTableRow>
-            <DataTableRow>
-              <span className="tb-sub tb-amount">
-                {item.amount} <span>USD</span>
-              </span>
-            </DataTableRow>
-            <DataTableRow>
-              <span
-                className={`badge badge-dot badge-dot-xs badge-${
-                  item.status === "Paid" ? "success" : item.status === "Due" ? "warning" : "danger"
-                }`}
-              >
-                {item.status}
-              </span>
-            </DataTableRow>
-          </DataTableItem>
-        ))}
+        {renderRecentOrder()}
       </div>
     </Card>
   );

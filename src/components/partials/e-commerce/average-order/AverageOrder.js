@@ -3,15 +3,37 @@ import { Icon } from "../../../Component";
 import { Card, UncontrolledDropdown, DropdownItem, DropdownMenu, DropdownToggle } from "reactstrap";
 import { AverageOrderChart } from "../../charts/e-commerce/EcomCharts";
 
-const AverageOrder = () => {
-  const [data, setData] = useState("7");
+const AverageOrder = ({ revenue }) => {
+  const [data, setData] = useState("12");
+
+  // GET PROFIT
+  const getProfit = (revenue) => {
+    return (12 / 100) * revenue;
+  };
+
+  // GET GROWTH IN %
+  const getGrowth = (last, current) => {
+    const growth = ((current - last) / last) * 100;
+    return growth.toFixed(2) + "%";
+  };
+
+  // CONVERT PRICE TO CURRENCY TYPE
+  const toCurrency = (data) => {
+    const locale = new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumSignificantDigits: 9,
+    });
+    return locale.format(data);
+  };
+
   return (
     <Card className="h-100">
       <div className="nk-ecwg nk-ecwg2">
         <div className="card-inner">
           <div className="card-title-group mt-n1">
             <div className="card-title">
-              <h6 className="title">Averarge order</h6>
+              <h6 className="title">Total Profit</h6>
             </div>
             <div className="card-tools mr-n1">
               <UncontrolledDropdown>
@@ -68,14 +90,18 @@ const AverageOrder = () => {
           </div>
           <div className="data">
             <div className="data-group">
-              <div className="amount">$463.35</div>
+              <div className="amount">{toCurrency(getProfit(revenue.total))}</div>
               <div className="info text-right">
-                <span className="change up text-danger">
-                  <Icon name="arrow-long-up"></Icon>4.63%
+                <span className={`change ${revenue.lastMonth > revenue.thisMonth ? `down` : `up`} `}>
+                  <Icon name={revenue.lastMonth > revenue.thisMonth ? `arrow-long-down` : `arrow-long-up`}></Icon>
+                  {getGrowth(getProfit(revenue.lastMonth), getProfit(revenue.thisMonth))}
                 </span>
                 <br />
-                <span>vs. last week</span>
+                <span>vs. last month</span>
               </div>
+            </div>
+            <div className="info">
+              <strong>{toCurrency(getProfit(revenue.thisMonth))}</strong> in this month so far
             </div>
           </div>
           <h6 className="sub-title">Orders over time</h6>

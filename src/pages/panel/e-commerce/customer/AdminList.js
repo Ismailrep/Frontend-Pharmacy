@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   DropdownMenu,
   DropdownToggle,
@@ -9,6 +9,7 @@ import {
   DropdownItem,
   Form,
   Spinner,
+  Alert,
 } from "reactstrap";
 import {
   Block,
@@ -18,7 +19,6 @@ import {
   BlockHeadContent,
   BlockTitle,
   Icon,
-  Row,
   Col,
   UserAvatar,
   PaginationComponent,
@@ -28,16 +28,11 @@ import {
   DataTableHead,
   DataTableRow,
   DataTableItem,
-  TooltipComponent,
-  RSelect,
 } from "../../../../components/Component";
 import ProfPic from "../../../../images/Ramu-profile-default.png";
 import Content from "../../../../layout/content/Content";
 import Head from "../../../../layout/head/Head";
-import { filterRole, filterStatus } from "../../../pre-built/user-manage/UserData";
-import { bulkActionOptions, findUpper } from "../../../../utils/Utils";
-import { Link, Redirect } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import { API_URL } from "../../../../constants/API";
 import { useSelector } from "react-redux";
@@ -68,6 +63,8 @@ const AdminList = () => {
   const [errMsg, setErrMsg] = useState({});
   const [complete, setComplete] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [alertIsOpen, setAlertIsOpen] = useState(false);
 
   // REGULAR EXPRESSION
   const namePattern = /^([a-zA-Z]{3,})$/;
@@ -138,7 +135,11 @@ const AdminList = () => {
       if (response.data == "email") {
         return setErrMsg({ ...errMsg, emailUsed: response.data });
       }
-      alert("Admin successfully added and verification mail has been sent.");
+      setAlertIsOpen(true);
+      setInterval(() => {
+        setAlertIsOpen(false);
+      }, 2500);
+      // alert("Admin successfully added and verification mail has been sent.");
       setModal({ ...modal, add: false });
       getAdmins(1);
     } catch (error) {
@@ -319,8 +320,6 @@ const AdminList = () => {
                                         onClick={(ev) => {
                                           ev.preventDefault();
                                           orderByName(false);
-                                          // setSortState("dsc");
-                                          // sortFunc("dsc");
                                         }}
                                       >
                                         DESC
@@ -333,8 +332,6 @@ const AdminList = () => {
                                         onClick={(ev) => {
                                           ev.preventDefault();
                                           orderByName(true);
-                                          // setSortState("asc");
-                                          // sortFunc("asc");
                                         }}
                                       >
                                         ASC
@@ -593,6 +590,13 @@ const AdminList = () => {
             </div>
           </DataTable>
         </Block>
+
+        <Modal isOpen={alertIsOpen} size="lg">
+          <Alert className="alert-icon" color="success">
+            <Icon name="check-circle" />
+            <strong>New admin successfully added and verification mail has been sent.</strong>
+          </Alert>
+        </Modal>
 
         <Modal isOpen={modal.add} toggle={() => setModal({ add: false })} className="modal-dialog-centered" size="lg">
           <ModalBody>
