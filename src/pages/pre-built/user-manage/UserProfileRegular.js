@@ -19,10 +19,13 @@ import { countryOptions, userData } from "./UserData";
 import { getDateStructured } from "../../../utils/Utils";
 
 const UserProfileRegularPage = ({ sm, updateSm, setProfileName }) => {
+  const user = JSON.parse(window.localStorage.getItem("profile"));
+  const userAddress = JSON.parse(window.localStorage.getItem("address"));
+
   const [modalTab, setModalTab] = useState("1");
   const [userInfo, setUserInfo] = useState(userData[0]);
   const [formData, setFormData] = useState({
-    name: "Abu Bin Ishtiak",
+    name: "Ariel",
     displayName: "Ishtiak",
     phone: "818474958",
     dob: "1980-08-10",
@@ -57,7 +60,7 @@ const UserProfileRegularPage = ({ sm, updateSm, setProfileName }) => {
           <BlockHeadContent>
             <BlockTitle tag="h4">Personal Information</BlockTitle>
             <BlockDes>
-              <p>Basic info, like your name and address, that you use on Nio Platform.</p>
+              <p>Basic info, like your name and address, that you use on Ramu Website.</p>
             </BlockDes>
           </BlockHeadContent>
           <BlockHeadContent className="align-self-start d-lg-none">
@@ -74,53 +77,53 @@ const UserProfileRegularPage = ({ sm, updateSm, setProfileName }) => {
       <Block>
         <div className="nk-data data-list">
           <div className="data-head">
-            <h6 className="overline-title">Basics</h6>
+            <h6 className="overline-title">Profile Data</h6>
           </div>
-          <div className="data-item" onClick={() => setModal(true)}>
+          <div className="data-item" style={{ cursor: "default" }}>
             <div className="data-col">
-              <span className="data-label">Full Name</span>
-              <span className="data-value">{userInfo.name}</span>
+              <span className="data-label">First Name</span>
+              <span className="data-value">{user.first_name}</span>
             </div>
             <div className="data-col data-col-end">
-              <span className="data-more">
+              {/* <span className="data-more">
                 <Icon name="forward-ios"></Icon>
-              </span>
+              </span> */}
             </div>
           </div>
-          <div className="data-item" onClick={() => setModal(true)}>
+          <div className="data-item" style={{ cursor: "default" }}>
             <div className="data-col">
-              <span className="data-label">Display Name</span>
-              <span className="data-value">{userInfo.displayName}</span>
+              <span className="data-label">Last Name</span>
+              <span className="data-value">{user.last_name}</span>
             </div>
             <div className="data-col data-col-end">
-              <span className="data-more">
+              {/* <span className="data-more">
                 <Icon name="forward-ios"></Icon>
-              </span>
+              </span> */}
             </div>
           </div>
-          <div className="data-item">
+          <div className="data-item" style={{ cursor: "default" }}>
             <div className="data-col">
               <span className="data-label">Email</span>
-              <span className="data-value">info@softnio.com</span>
+              <span className="data-value">{user.email}</span>
             </div>
             <div className="data-col data-col-end">
-              <span className="data-more disable">
+              {/* <span className="data-more disable">
                 <Icon name="lock-alt"></Icon>
-              </span>
+              </span> */}
             </div>
           </div>
-          <div className="data-item" onClick={() => setModal(true)}>
+          <div className="data-item" style={{ cursor: "default" }}>
             <div className="data-col">
               <span className="data-label">Phone Number</span>
-              <span className="data-value text-soft">{userInfo.phone}</span>
+              <span className="data-value text-soft">{user.phone}</span>
             </div>
             <div className="data-col data-col-end">
-              <span className="data-more">
+              {/* <span className="data-more">
                 <Icon name="forward-ios"></Icon>
-              </span>
+              </span> */}
             </div>
           </div>
-          <div className="data-item" onClick={() => setModal(true)}>
+          {/* <div className="data-item" onClick={() => setModal(true)}>
             <div className="data-col">
               <span className="data-label">Date of Birth</span>
               <span className="data-value">{userInfo.dob}</span>
@@ -130,15 +133,23 @@ const UserProfileRegularPage = ({ sm, updateSm, setProfileName }) => {
                 <Icon name="forward-ios"></Icon>
               </span>
             </div>
-          </div>
+          </div> */}
           <div className="data-item" onClick={() => setModal(true)}>
             <div className="data-col">
               <span className="data-label">Address</span>
-              <span className="data-value">
-                {userInfo.address},
-                <br />
-                {userInfo.state}, {userInfo.country}
-              </span>
+              {userAddress[0].name === "" ? (
+                <span className="data-value">
+                  <b>Add Address Name</b>
+                  <br />
+                  Add Address
+                </span>
+              ) : (
+                <span className="data-value">
+                  <b>{userAddress[0].name}</b>
+                  <br />
+                  {userAddress[0].address}
+                </span>
+              )}
             </div>
             <div className="data-col data-col-end">
               <span className="data-more">
@@ -218,9 +229,9 @@ const UserProfileRegularPage = ({ sm, updateSm, setProfileName }) => {
             <Icon name="cross-sm"></Icon>
           </a>
           <div className="p-2">
-            <h5 className="title">Update Profile</h5>
-            <ul className="nk-nav nav nav-tabs">
-              <li className="nav-item">
+            <h5 className="title">Update Address</h5>
+            <ul style={{ justifyContent: "space-between" }} className="nk-nav nav nav-tabs">
+              {/* <li className="nav-item">
                 <a
                   className={`nav-link ${modalTab === "1" && "active"}`}
                   onClick={(ev) => {
@@ -231,22 +242,27 @@ const UserProfileRegularPage = ({ sm, updateSm, setProfileName }) => {
                 >
                   Personal
                 </a>
-              </li>
+              </li> */}
               <li className="nav-item">
                 <a
-                  className={`nav-link ${modalTab === "2" && "active"}`}
+                  className={`nav-link ${modalTab === "1" && "active"}`}
                   onClick={(ev) => {
                     ev.preventDefault();
-                    setModalTab("2");
+                    setModalTab("1");
                   }}
                   href="#address"
                 >
                   Address
                 </a>
               </li>
+              <li>
+                <Button style={{ marginTop: "15px" }} color="primary" size="sm" onClick={() => submitForm()}>
+                  Add address
+                </Button>
+              </li>
             </ul>
             <div className="tab-content">
-              <div className={`tab-pane ${modalTab === "1" ? "active" : ""}`} id="personal">
+              {/* <div className={`tab-pane ${modalTab === "1" ? "active" : ""}`} id="personal">
                 <Row className="gy-4">
                   <Col md="6">
                     <FormGroup>
@@ -346,13 +362,13 @@ const UserProfileRegularPage = ({ sm, updateSm, setProfileName }) => {
                     </ul>
                   </Col>
                 </Row>
-              </div>
-              <div className={`tab-pane ${modalTab === "2" ? "active" : ""}`} id="address">
+              </div> */}
+              <div className={`tab-pane ${modalTab === "1" ? "active" : ""}`} id="address">
                 <Row className="gy-4">
                   <Col md="6">
                     <FormGroup>
                       <label className="form-label" htmlFor="address-l1">
-                        Address Line 1
+                        Address Name
                       </label>
                       <input
                         type="text"
@@ -367,7 +383,7 @@ const UserProfileRegularPage = ({ sm, updateSm, setProfileName }) => {
                   <Col md="6">
                     <FormGroup>
                       <label className="form-label" htmlFor="address-l2">
-                        Address Line 2
+                        Full Address
                       </label>
                       <input
                         type="text"
@@ -379,7 +395,37 @@ const UserProfileRegularPage = ({ sm, updateSm, setProfileName }) => {
                       />
                     </FormGroup>
                   </Col>
-                  <Col md="6">
+                  <Col size="12">
+                    <ul
+                      className="align-center flex-wrap flex-sm-nowrap gx-4 gy-2"
+                      style={{ justifyContent: "space-between" }}
+                    >
+                      <li>
+                        <Button color="primary" size="md" onClick={() => submitForm()}>
+                          Set as main
+                        </Button>
+                      </li>
+                      {/* <li>
+                        Main Address <Icon className={`text-succes`} name={`check-circle`}></Icon>
+                      </li> */}
+                      <li style={{ color: "red", cursor: "pointer" }}>
+                        <a
+                          onClick={(ev) => {
+                            ev.preventDefault();
+                            setModalTab("1");
+                          }}
+                        >
+                          Delete
+                        </a>
+                      </li>
+                    </ul>
+                  </Col>
+                  {/* <Col md="12">
+                    <FormGroup>
+                      <hr />
+                    </FormGroup>
+                  </Col> */}
+                  {/* <Col md="6">
                     <FormGroup>
                       <label className="form-label" htmlFor="address-st">
                         State
@@ -432,7 +478,7 @@ const UserProfileRegularPage = ({ sm, updateSm, setProfileName }) => {
                         </a>
                       </li>
                     </ul>
-                  </Col>
+                  </Col> */}
                 </Row>
               </div>
             </div>

@@ -32,6 +32,8 @@ import { useParams } from "react-router";
 
 const CartList = () => {
   const user = JSON.parse(window.localStorage.getItem("profile"));
+  const userAddress = JSON.parse(window.localStorage.getItem("address"));
+
   const [cartData, setCartData] = useState([]);
   const [data, setData] = useState(cartData);
   const [sm, updateSm] = useState(false);
@@ -141,8 +143,9 @@ const CartList = () => {
   };
 
   // CLOSING MODAL
-  const onDelete = () => {
+  const onCloseModal = () => {
     setView({ deleted: false });
+    setView({ checkout: false });
   };
 
   // UPDATE QUANTITY
@@ -218,6 +221,21 @@ const CartList = () => {
     return `${API_URL}/products/${image}`;
   };
 
+  // CHECKOUT CART
+  const checkoutCart = async () => {
+    try {
+      const response = await axios.post(`${API_URL}/cart/check-out-cart`, {
+        user_id: user.id,
+      });
+
+      console.log(response.data);
+      getCart();
+      setView({ checkout: true });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   // onChange function for searching name
   const onFilterChange = (e) => {
     setSearchText(e.target.value);
@@ -230,6 +248,7 @@ const CartList = () => {
 
   // Change Page
   const paginate = (pageNumber) => {
+    // console.log(pageNumber);
     setCurrentPage(pageNumber);
     getCart(pageNumber);
   };
@@ -244,6 +263,20 @@ const CartList = () => {
           <BlockBetween>
             <BlockHeadContent>
               <BlockTitle>Cart</BlockTitle>
+              <div style={{ fontWeight: "normal", textAlign: "left" }}>
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  Total price:{" "}
+                  <div style={{ fontSize: "large", fontWeight: "bold", marginLeft: "5px", color: "#293822" }}>
+                    {" "}
+                    {toCurrency(totalPrice())}
+                  </div>
+                </div>
+              </div>
+              <div style={{ fontWeight: "normal", textAlign: "left" }}>
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  Total item: <div style={{ fontWeight: "normal", marginLeft: "5px" }}> {cartData.length} items</div>
+                </div>
+              </div>
             </BlockHeadContent>
             <BlockHeadContent>
               <div className="toggle-wrap nk-block-tools-toggle">
@@ -303,10 +336,7 @@ const CartList = () => {
                       </UncontrolledDropdown>
                     </li> */}
                     <li className="nk-block-tools-opt">
-                      <Button className="toggle btn-icon d-md-none" color="primary" onClick={() => {}}>
-                        <Icon name="plus"></Icon>
-                      </Button>
-                      <Button className="toggle d-none d-md-inline-flex" color="primary" onClick={() => {}}>
+                      <Button className="toggle d-none d-md-inline-flex" color="primary" onClick={() => checkoutCart()}>
                         <span>Checkout</span>
                       </Button>
                     </li>
@@ -515,10 +545,7 @@ const CartList = () => {
                       })
                     : null}
                 </DataTableBody>
-                <div style={{ fontWeight: "bold", textAlign: "center", marginTop: "20px" }}>
-                  <div>PRICE TOTAL:</div>
-                  <div style={{ fontSize: "large" }}>{toCurrency(totalPrice())}</div>
-                </div>
+
                 <div className="card-inner">
                   {currentItems.length > 0 ? (
                     <PaginationComponent
@@ -917,10 +944,27 @@ const CartList = () => {
         </SimpleBar> */}
 
         {/* {view.add && <div className="toggle-overlay" onClick={toggle}></div>} */}
-        <Modal isOpen={view.deleted} toggle={() => onDelete()} className="modal-dialog-centered" size="sm">
+        <Modal isOpen={view.deleted} toggle={() => onCloseModal()} className="modal-dialog-centered" size="sm">
           <ModalBody>
             <div className="nk-modal-head">
               <h3 className="caption-text center">Item removed</h3>
+            </div>
+          </ModalBody>
+        </Modal>
+        <Modal isOpen={view.checkout} toggle={() => onCloseModal()} className="modal-dialog-centered" size="sm">
+          <ModalBody>
+            <div className="nk-modal-head">
+              {userAddress.length > 0 ? (
+                <div>
+                  <h3 className="caption-text center">Cart checked out!</h3>
+                  <h4 className="caption-text center">Please Check your transaction tab</h4>
+                </div>
+              ) : (
+                <div>
+                  <h3 className="caption-text center text-danger">Checkout failed!</h3>
+                  <h4 className="caption-text center">Please fill out your address first!</h4>
+                </div>
+              )}
             </div>
           </ModalBody>
         </Modal>

@@ -10,6 +10,7 @@ import { findUpper } from "../../../utils/Utils";
 import { Card, DropdownItem, UncontrolledDropdown, DropdownMenu, DropdownToggle } from "reactstrap";
 
 const UserProfileLayout = () => {
+  const user = JSON.parse(window.localStorage.getItem("profile"));
   const [sm, updateSm] = useState(false);
   const [mobileView, setMobileView] = useState(false);
   const [profileName, setProfileName] = useState("Abu Bin Ishtiak");
@@ -50,13 +51,15 @@ const UserProfileLayout = () => {
               <div className="card-inner-group">
                 <div className="card-inner">
                   <div className="user-card">
-                    <UserAvatar text={findUpper(profileName)} theme="primary" />
+                    <UserAvatar text={user.first_name} theme="primary" />
                     <div className="user-info">
-                      <span className="lead-text">{profileName}</span>
-                      <span className="sub-text">info@softnio.com</span>
+                      <span className="lead-text">
+                        {user.first_name} {user.last_name}
+                      </span>
+                      <span className="sub-text">{user.email}</span>
                     </div>
                     <div className="user-action">
-                      <UncontrolledDropdown>
+                      {/* <UncontrolledDropdown>
                         <DropdownToggle tag="a" className="btn btn-icon btn-trigger mr-n2">
                           <Icon name="more-v"></Icon>
                         </DropdownToggle>
@@ -88,11 +91,11 @@ const UserProfileLayout = () => {
                             </li>
                           </ul>
                         </DropdownMenu>
-                      </UncontrolledDropdown>
+                      </UncontrolledDropdown> */}
                     </div>
                   </div>
                 </div>
-                <div className="card-inner">
+                {/* <div className="card-inner">
                   <div className="user-account-info py-0">
                     <h6 className="overline-title-alt">Nio Wallet Account</h6>
                     <div className="user-balance">
@@ -105,7 +108,7 @@ const UserProfileLayout = () => {
                       </span>
                     </div>
                   </div>
-                </div>
+                </div> */}
                 <div className="card-inner p-0">
                   <ul className="link-list-menu">
                     <li onClick={() => updateSm(false)}>

@@ -31,6 +31,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [passState, setPassState] = useState(false);
   const [errorVal, setError] = useState("");
+  const [defAddress, setDefAddress] = useState([{ name: "", address: "" }]);
 
   // const dispatch = useDispatch;
   // const [data, setData] = useState(initialState);
@@ -45,8 +46,16 @@ const Login = () => {
         password: password,
       });
 
+      const address = await axios.get(`http://localhost:2000/address/get-address/${response.data.id}`);
+
+      // console.log(address.data.response);
+
       if (email === email && password === password) {
         localStorage.setItem("profile", JSON.stringify(response.data));
+        localStorage.setItem(
+          "address",
+          JSON.stringify(address.data.response.length === 0 ? defAddress : address.data.response)
+        );
         const user = JSON.parse(window.localStorage.getItem("profile"));
 
         setTimeout(() => {
