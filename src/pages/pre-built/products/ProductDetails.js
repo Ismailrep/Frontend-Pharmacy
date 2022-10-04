@@ -196,6 +196,10 @@ const ProductDetails = () => {
                               value={counter}
                               onChange={(e) => setCounter(Number(e.target.value))}
                             />
+                            <div style={{ textAlign: "left", marginTop: "10px" }}>
+                              {" "}
+                              unit: <i style={{ fontWeight: "bold" }}>{products.unit}</i>
+                            </div>
                             <Button
                               color="light"
                               outline

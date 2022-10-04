@@ -21,7 +21,7 @@ const User = () => {
     if (admin.id) {
       dispatch(logoutAdmin());
     } else if (user) {
-      localStorage.removeItem("profile");
+      localStorage.clear();
     }
   };
 
@@ -68,12 +68,12 @@ const User = () => {
           </div>
           <div className="dropdown-inner">
             <LinkList>
-              <LinkItem link="/user-profile-regular" icon="user-alt" onClick={toggle}>
-                View Profile
-              </LinkItem>
-              <LinkItem link="/user-profile-setting" icon="setting-alt" onClick={toggle}>
-                Account Setting
-              </LinkItem>
+              {user ? (
+                <LinkItem link="/user-profile-regular" icon="user-alt" onClick={toggle}>
+                  Profile Data
+                </LinkItem>
+              ) : null}
+
               {admin.id ? (
                 <LinkItem link="/admin" icon="dashboard" onClick={toggle}>
                   Admin Dashboard

@@ -58,12 +58,16 @@ const UserTransactions = () => {
         startDate,
         endDate,
       });
+      cl;
+
       setInvoices(response.data.invoices);
       setTotalInvoices(response.data.count);
     } catch (error) {
       console.log(error);
     }
   };
+
+  console.log(invoices, totalInvoices);
 
   const btnChangeStatus = async (status) => {
     try {

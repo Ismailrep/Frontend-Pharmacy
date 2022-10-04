@@ -22,12 +22,17 @@ import { Card, DropdownItem, UncontrolledDropdown, DropdownMenu, DropdownToggle,
 import { productData, categoryOptions } from "../../pre-built/products/ProductData";
 import SimpleBar from "simplebar-react";
 import { useForm } from "react-hook-form";
+import axios from "axios";
+import { API_URL } from "../../../constants/API";
 import ProductH from "../../../images/product/h.png";
 import Dropzone from "react-dropzone";
 import { Modal, ModalBody } from "reactstrap";
 import { RSelect } from "../../../components/Component";
 
 const ProductList = () => {
+  const user = JSON.parse(window.localStorage.getItem("profile"));
+  const userAddress = JSON.parse(window.localStorage.getItem("address"));
+
   const [data, setData] = useState(productData);
   const [sm, updateSm] = useState(false);
   const [formData, setFormData] = useState({
@@ -50,6 +55,24 @@ const ProductList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemPerPage] = useState(7);
   const [files, setFiles] = useState([]);
+  const [invoices, setInvoices] = useState([]);
+
+  const getInvoices = async (page) => {
+    try {
+      const response = await axios.post(`${API_URL}/invoices/getInvoiceHeaders`, {
+        page,
+        perPage: itemPerPage,
+        invoice_id: onSearchText,
+      });
+      setInvoices(response.data.invoices);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getInvoices();
+  }, []);
 
   // Changing state value when searching name
   useEffect(() => {
@@ -219,7 +242,7 @@ const ProductList = () => {
   // Get current list, pagination
   const indexOfLastItem = currentPage * itemPerPage;
   const indexOfFirstItem = indexOfLastItem - itemPerPage;
-  const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = invoices.slice(indexOfFirstItem, indexOfLastItem);
 
   // Change Page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -411,13 +434,7 @@ const ProductList = () => {
                               <span className="tb-sub">{item.stock}</span>
                             </DataTableRow>
                             <DataTableRow size="md">
-                              <span className="tb-sub">
-                                {item.category.map((cat) => {
-                                  if (item.category[cat] + 1 === null || undefined) {
-                                    return cat.label;
-                                  } else return cat.label + ", ";
-                                })}
-                              </span>
+                              <span className="tb-sub">{userAddress[0].name}</span>
                             </DataTableRow>
                             <DataTableRow size="md">
                               <div className="asterisk tb-asterisk">

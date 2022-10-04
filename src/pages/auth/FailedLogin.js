@@ -10,7 +10,7 @@ import { Button } from "../../components/Component";
 
 const FailedLogin = () => {
   const user = JSON.parse(window.localStorage.getItem("profile"));
-  const delUser = localStorage.removeItem("profile");
+  const delUser = localStorage.clear();
   return (
     <React.Fragment>
       <Head title="Failed" />
