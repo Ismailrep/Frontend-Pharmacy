@@ -6,13 +6,13 @@ import { Card } from "reactstrap";
 import { API_URL } from "../../../constants/API";
 import { Icon } from "../../Component";
 
-const StoreStatistics = () => {
+const StoreStatistics = ({ thisMonth }) => {
   const [statistic, setStatistic] = useState({});
 
   // GET STORE STATISTIC
   const getStatistic = async () => {
     try {
-      const response = await axios.get(`${API_URL}/report/getStatistic`);
+      const response = await axios.post(`${API_URL}/report/getStatistic`, thisMonth);
       setStatistic(response.data);
     } catch (error) {
       console.log(error);
@@ -26,7 +26,7 @@ const StoreStatistics = () => {
 
   useEffect(() => {
     getStatistic();
-  }, []);
+  }, [thisMonth]);
 
   return (
     <Card className="h-100">

@@ -16,24 +16,33 @@ import { Redirect } from "react-router";
 import axios from "axios";
 import moment from "moment";
 import { API_URL } from "../../../constants/API";
+import DatePicker from "react-datepicker";
 
 const Dashboard = () => {
   const admin = useSelector((state) => state.admin);
   const [revenue, setRevenue] = useState({});
   const [itemSold, setItemSold] = useState(0);
 
+  const [thisMonth, setThisMonth] = useState([]);
+  let [startDate, endDate] = thisMonth;
+
   // GET REVENUE
   const getRevenue = async () => {
     try {
+      if (!thisMonth[0]) {
+        startDate = moment().startOf("month").format("YYYY-MM-DD");
+        endDate = moment(new Date().getTime()).format("YYYY-MM-DD");
+      }
       const response = await axios.post(`${API_URL}/report/getRevenue`, {
         week: getCurrent("isoWeek"),
         lastWeek: getLast("weeks", "isoWeek"),
-        thisMonth: getCurrent("month"),
+        thisMonth: [startDate, endDate],
         lastMonth: getLast("month", "month"),
+        last30d: getLast30d(),
       });
 
       let sold = 0;
-      await response.data.itemSold.forEach((element) => {
+      await response.data.totalItemSold.forEach((element) => {
         sold += +element.sold;
       });
       setRevenue(response.data);
@@ -53,9 +62,13 @@ const Dashboard = () => {
     return [startDate, endDate];
   };
 
+  const getLast30d = () => {
+    return moment().subtract(30, "days").format("YYYY-MM-DD");
+  };
+
   useEffect(() => {
     getRevenue();
-  }, []);
+  }, [thisMonth, thisMonth[0]]);
 
   if (!admin.id) {
     return <Redirect to={"/"} />;
@@ -69,6 +82,23 @@ const Dashboard = () => {
           <BlockBetween>
             <BlockHeadContent>
               <BlockTitle page>Dashboard</BlockTitle>
+            </BlockHeadContent>
+            <BlockHeadContent className="d-flex align-items-center">
+              <span className="h6 mr-2">Date: </span>
+              <div style={{ width: "210px" }}>
+                <DatePicker
+                  placeholderText={moment(new Date().getTime()).format("MMMM yyyy")}
+                  startDate={startDate}
+                  onChange={(update) => {
+                    setThisMonth(update);
+                  }}
+                  endDate={endDate}
+                  selectsRange={true}
+                  isClearable={true}
+                  popperPlacement="top-end"
+                  className="form-control date-picker"
+                />
+              </div>
             </BlockHeadContent>
           </BlockBetween>
         </BlockHead>
@@ -84,28 +114,28 @@ const Dashboard = () => {
             <Col xxl="4">
               <Row className="g-gs">
                 <Col xxl="12" md="6">
-                  <Orders />
+                  <Orders revenue={revenue} totalSold={itemSold} />
                 </Col>
                 <Col xxl="12" md="6">
-                  <Customer />
+                  <Customer revenue={revenue} totalSold={itemSold} />
                 </Col>
               </Row>
             </Col>
             <Col xxl="8">
-              <RecentOrders />
+              <RecentOrders thisMonth={thisMonth} />
             </Col>
             <Col xxl="4" md="6">
-              <TopProducts />
+              <TopProducts thisMonth={thisMonth} />
             </Col>
             <Col xxl="3" md="6">
-              <StoreStatistics />
+              <StoreStatistics thisMonth={thisMonth} />
             </Col>
-            <Col xxl="5" lg="6">
+            {/* <Col xxl="5" lg="6">
               <TrafficSources />
             </Col>
             <Col xxl="4" lg="6">
               <StoreVisitors />
-            </Col>
+            </Col> */}
           </Row>
         </Block>
       </Content>

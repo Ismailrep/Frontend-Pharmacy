@@ -4,8 +4,6 @@ import { Card, UncontrolledDropdown, DropdownItem, DropdownMenu, DropdownToggle 
 import { AverageOrderChart } from "../../charts/e-commerce/EcomCharts";
 
 const AverageOrder = ({ revenue }) => {
-  const [data, setData] = useState("12");
-
   // GET PROFIT
   const getProfit = (revenue) => {
     return (12 / 100) * revenue;
@@ -33,64 +31,12 @@ const AverageOrder = ({ revenue }) => {
         <div className="card-inner">
           <div className="card-title-group mt-n1">
             <div className="card-title">
-              <h6 className="title">Total Profit</h6>
-            </div>
-            <div className="card-tools mr-n1">
-              <UncontrolledDropdown>
-                <DropdownToggle
-                  tag="a"
-                  href="#toggle"
-                  onClick={(ev) => ev.preventDefault()}
-                  className="dropdown-toggle btn btn-icon btn-trigger"
-                >
-                  <Icon name="more-h" />
-                </DropdownToggle>
-                <DropdownMenu right className="dropdown-menu-sm">
-                  <ul className="link-list-opt no-bdr">
-                    <li className={data === "7" ? "active" : ""}>
-                      <DropdownItem
-                        tag="a"
-                        href="#dropdown"
-                        onClick={(ev) => {
-                          ev.preventDefault();
-                          setData("7");
-                        }}
-                      >
-                        <span>7 Days</span>
-                      </DropdownItem>
-                    </li>
-                    <li className={data === "15" ? "active" : ""}>
-                      <DropdownItem
-                        tag="a"
-                        href="#dropdown"
-                        onClick={(ev) => {
-                          ev.preventDefault();
-                          setData("15");
-                        }}
-                      >
-                        <span>15 days</span>
-                      </DropdownItem>
-                    </li>
-                    <li className={data === "30" ? "active" : ""}>
-                      <DropdownItem
-                        tag="a"
-                        href="#dropdown"
-                        onClick={(ev) => {
-                          ev.preventDefault();
-                          setData("30");
-                        }}
-                      >
-                        <span>30 days</span>
-                      </DropdownItem>
-                    </li>
-                  </ul>
-                </DropdownMenu>
-              </UncontrolledDropdown>
+              <h6 className="title">Profit</h6>
             </div>
           </div>
           <div className="data">
             <div className="data-group">
-              <div className="amount">{toCurrency(getProfit(revenue.total))}</div>
+              <div className="amount">{toCurrency(getProfit(revenue.thisMonth))}</div>
               <div className="info text-right">
                 <span className={`change ${revenue.lastMonth > revenue.thisMonth ? `down` : `up`} `}>
                   <Icon name={revenue.lastMonth > revenue.thisMonth ? `arrow-long-down` : `arrow-long-up`}></Icon>
@@ -101,13 +47,13 @@ const AverageOrder = ({ revenue }) => {
               </div>
             </div>
             <div className="info">
-              <strong>{toCurrency(getProfit(revenue.thisMonth))}</strong> in this month so far
+              <strong>{toCurrency(getProfit(revenue.lastMonth))}</strong> in last month
             </div>
           </div>
-          <h6 className="sub-title">Orders over time</h6>
+          <h6 className="sub-title">Last 30 days profit</h6>
         </div>
         <div className="nk-ecwg2-ck">
-          <AverageOrderChart state={data} />
+          <AverageOrderChart revData={revenue.revenuePerDay} />
         </div>
       </div>
     </Card>

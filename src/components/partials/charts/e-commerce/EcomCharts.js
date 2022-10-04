@@ -1,3 +1,4 @@
+import moment from "moment";
 import React, { useEffect, useState } from "react";
 import { Bar, Doughnut, Line } from "react-chartjs-2";
 import {
@@ -15,11 +16,64 @@ import {
   storeVisitors,
 } from "./Data";
 
-export const TotalSalesChart = () => {
+export const TotalSalesChart = ({ salesData }) => {
+  const [labels, setLabels] = useState([]);
+  const [data, setData] = useState([]);
+  const sales = {
+    labels,
+    dataUnit: "Sales",
+    lineTension: 0.3,
+    datasets: [
+      {
+        label: "Sales",
+        borderColor: "#1ABEA8",
+        backgroundColor: "rgba(26,190,168,0.25)",
+        borderWidth: 2,
+        pointBorderColor: "transparent",
+        pointBackgroundColor: "transparent",
+        pointHoverBackgroundColor: "#fff",
+        pointHoverBorderColor: "#9d72ff",
+        pointBorderWidth: 2,
+        pointHoverRadius: 4,
+        pointHoverBorderWidth: 2,
+        pointRadius: 4,
+        pointHitRadius: 4,
+        data,
+      },
+    ],
+  };
+
+  const getData = () => {
+    let tempLabels = [];
+    let tempData = [];
+    salesData.forEach((item) => {
+      tempLabels.push(moment(item.date).format("DD MMM"));
+      tempData.push(+item.revenue);
+    });
+    setLabels(tempLabels);
+    setData(tempData);
+  };
+
+  // CONVERT PRICE TO CURRENCY TYPE
+  const toCurrency = (data) => {
+    const locale = new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumSignificantDigits: 9,
+    });
+    return locale.format(data);
+  };
+
+  useEffect(() => {
+    if (salesData) {
+      getData();
+    }
+  }, [salesData]);
+
   return (
     <Line
       className="ecommerce-line-chart-s1"
-      data={totalSales}
+      data={sales}
       options={{
         legend: {
           display: false,
@@ -32,10 +86,10 @@ export const TotalSalesChart = () => {
               return data["labels"][tooltipItem[0]["index"]];
             },
             label: function (tooltipItem, data) {
-              return `${data.datasets[tooltipItem.datasetIndex]["data"][tooltipItem["index"]]} sales`;
+              return `${toCurrency(data.datasets[tooltipItem.datasetIndex]["data"][tooltipItem["index"]])}`;
             },
           },
-          backgroundColor: "#1c2b46",
+          backgroundColor: "#1ABEA8",
           titleFontSize: 10,
           titleFontColor: "#fff",
           titleMarginBottom: 4,
@@ -89,20 +143,62 @@ export const TotalSalesChart = () => {
   );
 };
 
-export const AverageOrderChart = ({ state }) => {
-  const [data, setData] = useState(averargeOrder);
+export const AverageOrderChart = ({ revData }) => {
+  const [labels, setLabels] = useState([]);
+  const [data, setData] = useState([]);
+  const profit = {
+    labels,
+    dataUnit: "People",
+    lineTension: 0.1,
+    datasets: [
+      {
+        label: "Active Users",
+        borderColor: "#4B6340",
+        backgroundColor: "#4B6340",
+        barPercentage: 0.7,
+        categoryPercentage: 0.7,
+        borderWidth: 2,
+        data,
+      },
+    ],
+  };
+
+  const getData = () => {
+    let tempLabels = [];
+    let tempData = [];
+
+    revData.forEach((item) => {
+      tempLabels.push(moment(item.date).format("DD MMM"));
+      tempData.push(getProfit(+item.revenue));
+    });
+    setLabels(tempLabels);
+    setData(tempData);
+  };
+
+  // GET PROFIT
+  const getProfit = (revenue) => {
+    return (12 / 100) * revenue;
+  };
+
+  // CONVERT PRICE TO CURRENCY TYPE
+  const toCurrency = (data) => {
+    const locale = new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumSignificantDigits: 9,
+    });
+    return locale.format(data);
+  };
+
   useEffect(() => {
-    if (state === "7") {
-      setData(averargeOrderSet2);
-    } else if (state === "15") {
-      setData(averargeOrderSet3);
-    } else {
-      setData(averargeOrderSet4);
+    if (revData) {
+      getData();
     }
-  }, [state]);
+  }, [revData]);
+
   return (
     <Bar
-      data={data}
+      data={profit}
       options={{
         legend: {
           display: false,
@@ -113,10 +209,11 @@ export const AverageOrderChart = ({ state }) => {
           enabled: true,
           callbacks: {
             title: function (tooltipItem, data) {
-              return false; //data['labels'][tooltipItem[0]['index']];
+              // return false;
+              return data["labels"][tooltipItem[0]["index"]];
             },
             label: function (tooltipItem, data) {
-              return `${data.datasets[tooltipItem.datasetIndex]["data"][tooltipItem["index"]]}`;
+              return `${toCurrency(data.datasets[tooltipItem.datasetIndex]["data"][tooltipItem["index"]])}`;
             },
           },
           backgroundColor: "#1c2b46",
@@ -144,7 +241,7 @@ export const AverageOrderChart = ({ state }) => {
                 stepSize: 100,
               },
               gridLines: {
-                color: "rgba(82, 100, 132, 0.2)",
+                color: "#fff",
                 tickMarkLength: 0,
                 zeroLineColor: "rgba(82, 100, 132, 0.2)",
               },
@@ -173,11 +270,54 @@ export const AverageOrderChart = ({ state }) => {
   );
 };
 
-export const TotalOrderChart = () => {
+export const TotalOrderChart = ({ salesData }) => {
+  const [labels, setLabels] = useState([]);
+  const [data, setData] = useState([]);
+  const sales = {
+    labels,
+    dataUnit: "Sales",
+    lineTension: 0.3,
+    datasets: [
+      {
+        label: "Sales",
+        borderColor: "#4B6340",
+        backgroundColor: "rgba(26,190,168,0.25)",
+        borderWidth: 2,
+        pointBorderColor: "transparent",
+        pointBackgroundColor: "transparent",
+        pointHoverBackgroundColor: "#fff",
+        pointHoverBorderColor: "#9d72ff",
+        pointBorderWidth: 2,
+        pointHoverRadius: 4,
+        pointHoverBorderWidth: 2,
+        pointRadius: 4,
+        pointHitRadius: 4,
+        data,
+      },
+    ],
+  };
+
+  const getData = () => {
+    let tempLabels = [];
+    let tempData = [];
+    salesData.forEach((item) => {
+      tempLabels.push(moment(item.date).format("DD MMM"));
+      tempData.push(+item.sold);
+    });
+    setLabels(tempLabels);
+    setData(tempData);
+  };
+
+  useEffect(() => {
+    if (salesData) {
+      getData();
+    }
+  }, [salesData]);
+
   return (
     <Line
       className="ecommerce-line-chart-s1"
-      data={totalOrders}
+      data={sales}
       options={{
         legend: {
           display: false,
@@ -190,7 +330,7 @@ export const TotalOrderChart = () => {
               return data["labels"][tooltipItem[0]["index"]];
             },
             label: function (tooltipItem, data) {
-              return `${data.datasets[tooltipItem.datasetIndex]["data"][tooltipItem["index"]]} orders`;
+              return `${data.datasets[tooltipItem.datasetIndex]["data"][tooltipItem["index"]]} sales`;
             },
           },
           backgroundColor: "#1c2b46",

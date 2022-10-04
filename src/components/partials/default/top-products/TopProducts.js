@@ -1,15 +1,19 @@
 import axios from "axios";
+import moment from "moment";
 import React, { useEffect, useState } from "react";
 import { Card } from "reactstrap";
 import { API_URL } from "../../../../constants/API";
 
-const TopProducts = () => {
+const TopProducts = ({ thisMonth }) => {
   const [topProducts, setTopProducts] = useState([]);
+  let [startDate, endDate] = thisMonth;
 
   // GET TOP 5 MOST SOLD PRODUCTS
   const getTopProducts = async (req, res) => {
     try {
-      const response = await axios.get(`${API_URL}/report/getTopProducts`);
+      if (!startDate) startDate = moment().subtract(1, "month").startOf("month").format("YYYY-MM-DD");
+      if (!endDate) endDate = moment(new Date().getTime()).format("YYYY-MM-DD");
+      const response = await axios.post(`${API_URL}/report/getTopProducts`, { date: [startDate, endDate] });
       setTopProducts(response.data);
     } catch (error) {
       console.log(error);
@@ -28,7 +32,7 @@ const TopProducts = () => {
 
   useEffect(() => {
     getTopProducts();
-  }, []);
+  }, [thisMonth]);
 
   return (
     <Card className="h-100">
