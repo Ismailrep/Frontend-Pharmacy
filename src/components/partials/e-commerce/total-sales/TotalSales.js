@@ -29,18 +29,30 @@ const TotalSales = ({ revenue }) => {
         <div className="card-inner">
           <div className="card-title-group">
             <div className="card-title">
-              <h6 className="title">Total Sales</h6>
+              <h6 className="title">Revenue</h6>
             </div>
-            <div className="card-tools">
+            {/* <div className="card-tools">
               <a href="#report" onClick={(ev) => ev.preventDefault()} className="link info">
                 View Report
               </a>
-            </div>
+            </div> */}
           </div>
           <div className="data">
-            <div className="amount">{toCurrency(revenue.total)}</div>
-            <div className="info">
-              <strong>{toCurrency(revenue.lastMonth)}</strong> in last month
+            <div className="data-group">
+              <div>
+                <div className="amount">{toCurrency(revenue.thisMonth)}</div>
+                <div className="info">
+                  <strong>{toCurrency(revenue.lastMonth)}</strong> in last month
+                </div>
+              </div>
+              <div className="info text-right">
+                <span className={`change ${revenue.lastMonth > revenue.thisMonth ? `down` : `up`} `}>
+                  <Icon name={revenue.lastMonth > revenue.thisMonth ? `arrow-long-down` : `arrow-long-up`}></Icon>
+                  {getGrowth(revenue.lastMonth, revenue.thisMonth)}
+                </span>
+                <br />
+                <span>vs. last month</span>
+              </div>
             </div>
           </div>
           <div className="data">
@@ -59,7 +71,7 @@ const TotalSales = ({ revenue }) => {
           </div>
         </div>
         <div className="nk-ecwg1-ck">
-          <TotalSalesChart />
+          <TotalSalesChart salesData={revenue.revenuePerDay} />
         </div>
       </div>
     </Card>

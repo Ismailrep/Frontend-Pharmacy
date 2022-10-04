@@ -8,13 +8,17 @@ import { API_URL } from "../../../../constants/API";
 import { DataTableHead, DataTableRow, DataTableItem, UserAvatar } from "../../../Component";
 import { recentOrderData } from "./OrderData";
 
-const RecentOrders = () => {
+const RecentOrders = ({ thisMonth }) => {
   const [recentOrder, setRecentOrder] = useState([]);
 
   // GET 5 RECENT ORDER
   const getRecentOrder = async () => {
     try {
-      const response = await axios.get(`${API_URL}/report/getRecentOrder`);
+      let startDate = thisMonth[0];
+      let endDate = thisMonth[1];
+      if (!startDate) startDate = moment().subtract(1, "month").startOf("month").format("YYYY-MM-DD");
+      if (!endDate) endDate = moment(new Date().getTime()).format("YYYY-MM-DD");
+      const response = await axios.post(`${API_URL}/report/getRecentOrder`, { thisMonth: [startDate, endDate] });
       setRecentOrder(response.data);
     } catch (error) {
       console.log(error);
@@ -73,7 +77,7 @@ const RecentOrders = () => {
 
   useEffect(() => {
     getRecentOrder();
-  }, []);
+  }, [thisMonth]);
 
   return (
     <Card className="card-full">
